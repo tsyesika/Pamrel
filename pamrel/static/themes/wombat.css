@@ -1,0 +1,31 @@
+body, html {
+    margin: 0;
+    background-color: #111111;
+    color: #BBBBBB;
+}
+
+/* Comment */
+.c {
+    color: #9c998e;
+    font-style: italic;
+}
+
+/* def <name>, class <name>, <name>() */
+.bp, .nf, .nb, .nc, .nd {
+    color: #eaddad
+}
+
+/* imports and stuff */
+.kn, .mi, .nd:first-letter {
+    color: #e5786d;
+}
+
+/* Strings */
+.s, .sd {
+    color: #95e454
+}
+
+/* if statement */
+.k, .ow {
+    color: #88b8f6;
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Paste - {{ paste.pid }} </title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ paste.theme }}.css">
+    </head>
+    <body>
+        {% if highlighted %}
+            {{ paste.content|safe }}
+        {% else %}
+            <pre>{{ paste.content }}</pre>
+        {% endif %}
+    </body>
+</html>
