@@ -1,7 +1,13 @@
 body, html {
     margin: 0;
     background-color: #111111;
-    color: #BBBBBB;
+    color: #bbb;
+}
+
+/* Line number columns */
+.lineno {
+    color: #555;
+    background-color: #000;
 }
 
 /* Comment */

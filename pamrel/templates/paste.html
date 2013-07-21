@@ -5,13 +5,19 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta charset="utf-8">
         
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ paste.theme }}.css">
+        {% if paste.numbers %}
+            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/lines.css">
+        {% endif %}
     </head>
     <body>
-        {% if highlighted %}
-            {{ paste.content|safe }}
-        {% else %}
-            <pre>{{ paste.content }}</pre>
-        {% endif %}
+        <div class="code">
+            {% if highlighted %}
+                {{ paste.content|safe }}
+            {% else %}
+                <pre>{{ paste.content }}</pre>
+            {% endif %}
+        </div>
     </body>
 </html>
