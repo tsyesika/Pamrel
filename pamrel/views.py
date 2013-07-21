@@ -32,7 +32,7 @@ def paste(request, pid=None):
         highlighted = False
         if paste.language is not None and paste.syntax:
             lexer = get_lexer_by_name(paste.language)
-            numbers = "inline" if paste.numbers else False
+            numbers = "table" if paste.numbers else False
             paste.content = highlight(
                     paste.content,
                     lexer, 
