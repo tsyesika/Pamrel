@@ -18,7 +18,7 @@ def delete_paste(request, paste):
     try:
         paste = int(paste, 16)
     except ValueError:
-        error = {"error", "Invalid ID {0!r}".format(paste)}
+        error = {"error": "Invalid ID {0!r}".format(paste)}
         return render_to_json(error, status=400)
 
     try:
