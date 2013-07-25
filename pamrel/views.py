@@ -6,7 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 
 from pygments import highlight
-from pygments.lexers import guess_lexer, get_lexer_by_name
+from pygments.lexers import (guess_lexer, get_lexer_by_name, get_lexer_for_filename,
+                             get_lexer_for_mimetype)
 from pygments.formatters import HtmlFormatter
 
 from pamrel.tools import render_to_json, deletable
