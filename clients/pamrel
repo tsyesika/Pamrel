@@ -44,7 +44,7 @@ if __name__ == "__main__":
     if "error" in paste:
         print("[Error] {0}".format(paste["error"]))
 
-    url = "{server}/{pid}".format(server=server, pid=paste["id"])
+    url = "{server}/{pid}".format(server=server, pid=paste["object"]["id"])
 
     if "-o" in sys.argv:
         # open in browser
