@@ -88,7 +88,7 @@ def paste(request, pid=None):
             lexer = get_lexer_for_filename(body["fileName"], content)
         elif "fileExtension" in body:
             lexer = get_lexer_for_filename(
-                    "file.{0}".format(body["fileName"]),
+                    "file.{0}".format(body["fileExtension"]),
                     content
                     )
         else:
