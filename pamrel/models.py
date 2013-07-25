@@ -9,6 +9,7 @@ class Paste(models.Model):
     content = models.TextField()
     theme = models.CharField(max_length=256, default="base")
     language = models.CharField(max_length=256, blank=True, null=True, default=None)
+    delete_token = models.CharField(max_length=512)
 
     # optional stuff
     delete_at = models.DateTimeField(blank=True, null=True)

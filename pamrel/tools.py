@@ -1,9 +1,14 @@
 import json
 import datetime
+import random
+import string
 
 from pytz import utc
 
 from django.http import HttpResponse
+
+alphabet = string.ascii_lowercase + string.ascii_uppercase + "0123456789"
+base = len(alphabet)
 
 def render_to_json(data, status=200):
     """ Renders data to json """
@@ -15,6 +20,12 @@ def render_to_json(data, status=200):
             status=status,
             )
 
+
+def random_token(length):
+    rstr = ""
+    for i in range(length):
+        rstr += random.choice(alphabet)
+    return rstr
 
 def deletable(paste):
     """ Determines if the paste should be deleted """

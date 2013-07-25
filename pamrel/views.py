@@ -10,11 +10,49 @@ from pygments.lexers import (guess_lexer, get_lexer_by_name, get_lexer_for_filen
                              get_lexer_for_mimetype)
 from pygments.formatters import HtmlFormatter
 
-from pamrel.tools import render_to_json, deletable
+from pamrel.tools import render_to_json, random_token, deletable
 from pamrel.models import Paste
 
 @csrf_exempt
+def delete_paste(request, paste):
+    try:
+        paste = int(paste, 16)
+    except ValueError:
+        error = {"error", "Invalid ID {0!r}".format(paste)}
+        return render_to_json(error, status=400)
+
+    try:
+        paste = Paste.objects.get(id=paste)
+    except exceptions.ObjectDoesNotExist:
+        error = {"error": "Paste does not exist."}
+        return render_to_json(error, status=404)
+
+    try:
+        token = json.loads(request.body)
+    except:
+        token = request.body
+
+    if paste.delete_token != token:
+        error = {"error": "Incorrect delete token"}
+        return render_to_json(error, status=403)
+    else:
+        context = {
+            "verb": "delete",
+            "object":{
+                "id": paste.pid,
+                "objectType": "paste",
+            },
+        }
+        paste.delete()
+        return render_to_json(context)
+
+
+
+@csrf_exempt
 def paste(request, pid=None):
+    if request.method == "DELETE":
+        return delete_paste(request, pid)
+
     if pid is not None and request.method == "GET":
         pid = int(pid, 16)
         try:
@@ -63,10 +101,14 @@ def paste(request, pid=None):
 
     elif request.method == "POST":
         # making a new paste :D
-        try:
-            body = json.loads(request.body)
-        except ValueError:
-            body = request.body
+        if request.POST:
+            body = dict(request.POST)
+        else:
+            data = request.body
+            try:
+                body = json.loads(data)
+            except ValueError:
+                body = {"content": data}
 
         body = body.get("object", body)
 
@@ -107,6 +149,7 @@ def paste(request, pid=None):
             delete_at=delete_at,
             syntax=body.get("syntax", True),
             numbers=body.get("numbers", False),
+            delete_token=random_token(128)
             )
         
         if "theme" in body:
@@ -122,7 +165,8 @@ def paste(request, pid=None):
                 "content": paste.content,
                 "created": paste.created.isoformat(),
                 "modified": paste.modified.isoformat(),
-                "theme": paste.theme
+                "theme": paste.theme,
+                "deleteToken": paste.delete_token,
             },
         }
 
@@ -130,7 +174,17 @@ def paste(request, pid=None):
 
 @csrf_exempt
 def api(request):
-    if request.method != "GET":
+    if request.method == "DELETE":
+        try:
+            pasteid = json.loads(request.body)
+        except ValueError:
+            error = {"error": "Cannot decode request"}
+            return render_to_json(error, status=400)
+    
+        pid = pasteid.get("object", {}).get("id", None)
+        return delete_paste(pid)
+
+    elif request.method != "GET":
         return paste(request)
 
     # Lets return the home page
