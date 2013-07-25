@@ -153,7 +153,7 @@ def paste(request, pid=None):
             theme=body.get("theme", "base")
             )
         
-        if "theme" in body:
+        if "theme" in body and body["theme"]:
             paste.theme = body["theme"]
 
         paste.save()
