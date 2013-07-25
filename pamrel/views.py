@@ -53,7 +53,7 @@ def paste(request, pid=None):
 
         return render(request, "paste.html", context)
 
-    elif pid is not None and request.method == "POST":
+    elif pid != None and request.method == "POST":
         error = {
             "error": "You can't specify a paste ID when making a new post.",
         }
@@ -66,6 +66,8 @@ def paste(request, pid=None):
             body = json.loads(request.body)
         except ValueError:
             body = request.body
+
+        body = body.get("object", body)
 
         if len(body) <= 1 and "content" not in body:
             body = {"content": body.keys()[0]}
