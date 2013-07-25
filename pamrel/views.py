@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
@@ -60,7 +62,11 @@ def paste(request, pid=None):
 
     elif request.method == "POST":
         # making a new paste :D
-        body = dict(request.POST)
+        try:
+            body = json.reads(request.body)
+        except ValueError:
+            body = request.body
+
         if len(body) <= 1 and "content" not in body:
             body = {"content": body.keys()[0]}
 
