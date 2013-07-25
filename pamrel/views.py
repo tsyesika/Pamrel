@@ -72,10 +72,20 @@ def paste(request, pid=None):
             content = content[0]
 
         # got to figure out what language it is
-        lexer = guess_lexer(content) 
+        if "mimeType" in body:
+            lexer = get_lexer_for_mimetype(body["mimeType"]) 
+        elif "fileName" in body:
+            lexer = guess_lexer_for_filename(body["file_name"], content)
+        elif "fileExtension" in body:
+            lexer = guess_lexer_for_filename(
+                    "file.{0}".format(body["file_name"]),
+                    content
+                    )
+        else:
+            lexer = guess_lexer(content)
 
-        if "delete_at" in body:
-            date_format = body.get("date_format", "%Y-%M-%DT%H:%MZ")
+        if "deleteAt" in body:
+            date_format = body.get("dateFormat", "%Y-%M-%DT%H:%MZ")
             date_at = datetime.datetime.strptime(body["delete_at"], date_format)
         else:
             delete_at = None
@@ -83,12 +93,15 @@ def paste(request, pid=None):
         paste = Paste(
             content=content,
             language=lexer.aliases[0], # for some strange reason get_lexer_by_name(lexer.name) does not work >.<
-            delete_on_views=body.get("delete_on_views", None),
+            delete_on_views=body.get("deleteOnViews", None),
             delete_at=delete_at,
             syntax=body.get("syntax", True),
-            numbers=body.get("numbers", True), 
+            numbers=body.get("numbers", True),
             )
         
+        if "theme" in body:
+            paste.theme = body["theme"]
+
         paste.save()
 
         context = {
@@ -99,6 +112,7 @@ def paste(request, pid=None):
                 "content": paste.content,
                 "created": paste.created.isoformat(),
                 "modified": paste.modified.isoformat(),
+                "theme": paste.theme
             },
         }
 
@@ -109,4 +123,26 @@ def api(request):
     if request.method != "GET":
         return paste(request)
 
+    # Lets return the home page
+    class Home(object):
+        pid = "MANUAL"
+        content = open("home.html").read()
+        numbers = False
 
+    context = {
+        "paste": Home(),
+        "highlighted": True,
+    }
+    return render(request, "paste.html", context)
+
+def licence(request):
+    class Licence(object):
+        pid = "LICENCE"
+        content = open("LICENSE").read()
+        numbers = False
+
+    context = {
+        "paste": Licence(),
+    }
+
+    return render(request, "paste.html", context)
