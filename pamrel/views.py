@@ -63,7 +63,7 @@ def paste(request, pid=None):
     elif request.method == "POST":
         # making a new paste :D
         try:
-            body = json.reads(request.body)
+            body = json.loads(request.body)
         except ValueError:
             body = request.body
 
