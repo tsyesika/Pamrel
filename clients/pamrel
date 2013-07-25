@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+import json
+import urllib2
+import os
+import sys
+
+
+server = "http://pamrel.lu"
+
+en_help_str = "{0} [--theme=theme] <file>".format(sys.argv[0])
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1 or "-h" in sys.argv or "--help" in sys.argv:
+        print(en_help_str)
+        sys.exit()
+
+    paste = sys.argv[-1]
+
+    if paste.find(".") != -1:
+        file_type = paste.split(".")[-1]
+    else:
+        file_type = None
+
+    theme = None
+    for arg in sys.argv:
+        if arg.startswith("--theme="):
+            theme = arg.split("=", 1)[1]
+
+    context = {
+        "verb": "post",
+        "object": {
+            "content": open(paste).read(),
+            "file_extension": file_type,
+            "theme": theme,
+        }
+    }
+
+    pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
+    request = urllib2.Request(server, data=json.dumps(context))
+    request.add_header("Content-Type", "application/json")
+    request.get_method = lambda: "POST"
+    paste = json.loads(pamreltu.open(request).read())
+
+    if "error" in paste:
+        print("[Error] {0}".format(paste["error"]))
+
+    url = "{server}/{pid}".format(server=server, pid=paste["id"])
+
+    if "-o" in sys.argv:
+        # open in browser
+        import webbrowser
+        webbrowser.open(url)
+        sys.exit()
+
+    print(url)
