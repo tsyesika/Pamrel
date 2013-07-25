@@ -126,7 +126,7 @@ def api(request):
     # Lets return the home page
     class Home(object):
         pid = "MANUAL"
-        content = open("home.html").read()
+        content = open(settings.HOME).read()
         numbers = False
 
     context = {
@@ -138,7 +138,7 @@ def api(request):
 def licence(request):
     class Licence(object):
         pid = "LICENCE"
-        content = open("LICENSE").read()
+        content = open(settings.LICENCE).read()
         numbers = False
 
     context = {
