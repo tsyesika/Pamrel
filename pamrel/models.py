@@ -24,4 +24,4 @@ class Paste(models.Model):
     @property
     def pid(self):
         """ Goes from Paste.id -> base64 encoded string """
-        return hex(self.id).lstrip("0x")
+        return hex(self.id).lstrip("0x").rstrip("L")
