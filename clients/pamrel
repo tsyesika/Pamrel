@@ -30,7 +30,7 @@ if __name__ == "__main__":
         "verb": "post",
         "object": {
             "content": open(paste).read(),
-            "file_extension": file_type,
+            "fileExtension": file_type,
             "theme": theme,
         }
     }
