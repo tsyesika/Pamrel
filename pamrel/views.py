@@ -85,10 +85,10 @@ def paste(request, pid=None):
         if "mimeType" in body:
             lexer = get_lexer_for_mimetype(body["mimeType"]) 
         elif "fileName" in body:
-            lexer = get_lexer_for_filename(body["file_name"], content)
+            lexer = get_lexer_for_filename(body["fileName"], content)
         elif "fileExtension" in body:
             lexer = get_lexer_for_filename(
-                    "file.{0}".format(body["file_name"]),
+                    "file.{0}".format(body["fileName"]),
                     content
                     )
         else:
@@ -96,7 +96,7 @@ def paste(request, pid=None):
 
         if "deleteAt" in body:
             date_format = body.get("dateFormat", "%Y-%M-%DT%H:%MZ")
-            date_at = datetime.datetime.strptime(body["delete_at"], date_format)
+            date_at = datetime.datetime.strptime(body["deleteAt"], date_format)
         else:
             delete_at = None
 
