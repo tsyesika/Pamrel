@@ -8,6 +8,7 @@ import sys
 server = "http://pamrel.lu"
 
 en_help_str = "{0} [--theme=theme] [--numbers=on/off] <file>".format(sys.argv[0])
+pastes = os.path.expanduser("~/.pamrel")
 
 if __name__ == "__main__":
     if len(sys.argv) <= 1 or "-h" in sys.argv or "--help" in sys.argv:
@@ -21,16 +22,39 @@ if __name__ == "__main__":
     else:
         file_type = None
 
+    # check the file exists
+    f = open(pastes, "w")
+    f.close()
+
     theme = None
     numbers = False
+    delete = False
     for arg in sys.argv:
         if arg.startswith("--theme="):
             theme = arg.split("=", 1)[1]
-        if arg.startswith("--numbers="):
+        elif arg.startswith("--numbers="):
             numbers = arg.split("=", 1)[1]
             if numbers not in ["on", "off"]:
                 print "Unknown --numbers={0}".format(numbers)
             numbers = True if numbers == "on" else False
+        elif arg.startswith("--delete="):
+            delete = arg.split("--delete=", 1)[1]
+    
+    if delete:
+        pastes = open(pastes).read()
+        if delete in pastes.keys():
+            token = pastes[pastes]["token"]
+            pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
+            request = urllib2.Request(server, data=token)
+            request.get_method = lambda: "DELETE"
+            paste = json.loads(pamreltu.open(request).read())
+            if "error" in paste:
+                print "[ERROR] {0}".format(paste)
+            else:
+                print "Success!"
+        else:
+            print "No delete token {0}".format(paste)
+         
 
     context = {
         "verb": "post",
@@ -50,6 +74,11 @@ if __name__ == "__main__":
 
     if "error" in paste:
         print("[Error] {0}".format(paste["error"]))
+
+    # save delete token
+    f = open(pastes, "a")
+    f.write(paste)
+    f.close()
 
     url = "{server}/{pid}".format(server=server, pid=paste["object"]["id"])
 

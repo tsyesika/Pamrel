@@ -149,7 +149,8 @@ def paste(request, pid=None):
             delete_at=delete_at,
             syntax=body.get("syntax", True),
             numbers=body.get("numbers", False),
-            delete_token=random_token(128)
+            delete_token=random_token(128),
+            theme=body.get("theme", "base")
             )
         
         if "theme" in body:
