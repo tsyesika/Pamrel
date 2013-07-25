@@ -106,7 +106,7 @@ def paste(request, pid=None):
             delete_on_views=body.get("deleteOnViews", None),
             delete_at=delete_at,
             syntax=body.get("syntax", True),
-            numbers=body.get("numbers", True),
+            numbers=body.get("numbers", False),
             )
         
         if "theme" in body:
