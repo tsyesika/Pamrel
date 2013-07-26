@@ -23,8 +23,9 @@ if __name__ == "__main__":
         file_type = None
 
     # check the file exists
-    f = open(pastes, "w")
-    f.close()
+    if not os.path.isfile(pastes):
+        f = open(pastes, "w")
+        f.close()
 
     theme = None
     numbers = False
@@ -36,16 +37,18 @@ if __name__ == "__main__":
             numbers = arg.split("=", 1)[1]
             if numbers not in ["on", "off"]:
                 print "Unknown --numbers={0}".format(numbers)
+                sys.exit()
             numbers = True if numbers == "on" else False
         elif arg.startswith("--delete="):
-            delete = arg.split("--delete=", 1)[1]
-    
+            delete = arg.split("=", 1)[1]
+            if delete.startswith(server):
+                delete = delete.split("/")[-1]
     if delete:
-        pastes = open(pastes).read()
-        if delete in pastes.keys():
-            token = pastes[pastes]["token"]
+        objects = json.loads(open(pastes).read())
+        if delete in objects.keys():
+            token = objects[delete]["deleteToken"]
             pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
-            request = urllib2.Request(server, data=token)
+            request = urllib2.Request("{0}/{1}".format(server, id), data=token)
             request.get_method = lambda: "DELETE"
             paste = json.loads(pamreltu.open(request).read())
             if "error" in paste:
@@ -53,8 +56,8 @@ if __name__ == "__main__":
             else:
                 print "Success!"
         else:
-            print "No delete token {0}".format(paste)
-         
+            print "No delete token {0}".format(delete)
+        sys.exit()  
 
     context = {
         "verb": "post",
@@ -76,8 +79,17 @@ if __name__ == "__main__":
         print("[Error] {0}".format(paste["error"]))
 
     # save delete token
-    f = open(pastes, "a")
-    f.write(paste)
+    f = open(pastes, "r")
+    try:
+        objects = json.loads(f.read())
+    except ValueError:
+        objects = dict()
+    f.close()
+    objects[paste["object"]["id"]] = paste["object"].copy()
+    # for space saving remove the content
+    del objects[paste["object"]["id"]]["content"]
+    f = open(pastes, "w")
+    f.write(json.dumps(objects, sort_keys=True, indent=4, separators=(',', ': ')))
     f.close()
 
     url = "{server}/{pid}".format(server=server, pid=paste["object"]["id"])
