@@ -72,7 +72,7 @@ def paste(request, pid=None):
         paste.viewed += 1
         paste.save()
 
-        css_path = None
+        theme_path = None
         highlighted = False
         if paste.language is not None and paste.syntax:
             lexer = get_lexer_by_name(paste.language)
@@ -95,10 +95,10 @@ def paste(request, pid=None):
             elif os.path.isfile(theme_css):
                 theme_path = theme_css
 
-       context = {
+        context = {
             "paste": paste,
             "highlighted": highlighted,
-            "css":css_path
+            "css":theme_path,
         }
 
         return render(request, "paste.html", context)
