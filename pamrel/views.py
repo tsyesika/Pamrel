@@ -87,7 +87,7 @@ def paste(request, pid=None):
             highlighted = True
 
             css_dir = settings.STATIC_ROOT + "themes/"
-            lang_css = "{0}/{1}_{2}.css".format(css_dir, paste.theme, paste.langauge)
+            lang_css = "{0}/{1}_{2}.css".format(css_dir, paste.theme, paste.language)
             theme_css = "{0}/{1}".format(css_dir, paste.theme)
 
             if os.path.isfile(lang_css):
