@@ -127,7 +127,7 @@ def paste(request, pid=None):
         if body.get("MimeType", None):
             lexer = get_lexer_for_mimetype(body["MimeType"]) 
         elif body.get("FileName", None):
-            lexer = get_lexer_for_filename(body["FileName"], content)
+            lexer = get_lexer_for_filename(body["FileName"])
         elif body.get("FileExtension", None):
             lexer = get_lexer_for_filename(
                     "file.{0}".format(body["FileExtension"]),
