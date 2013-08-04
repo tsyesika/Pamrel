@@ -124,11 +124,11 @@ def paste(request, pid=None):
             content = content[0]
 
         # got to figure out what language it is
-        if "MimeType" in body:
+        if body.get("MimeType", None):
             lexer = get_lexer_for_mimetype(body["MimeType"]) 
-        elif "FileName" in body:
+        elif body.get("FileName", None):
             lexer = get_lexer_for_filename(body["FileName"], content)
-        elif "FileExtension" in body:
+        elif body.get("FileExtension", None):
             lexer = get_lexer_for_filename(
                     "file.{0}".format(body["FileExtension"]),
                     content
@@ -152,21 +152,21 @@ def paste(request, pid=None):
             delete_token=random_token(128),
             )
         
-        if "theme" in body and body["theme"]:
-            paste.theme = body["theme"]
+        if "Theme" in body and body["Theme"]:
+            paste.theme = body["Theme"]
 
         paste.save()
 
         context = {
-            "verb": "post",
-            "object": {
-                "id": paste.pid,
-                "objectType": "paste",
-                "content": paste.content,
-                "created": paste.created.isoformat(),
-                "modified": paste.modified.isoformat(),
-                "theme": paste.theme,
-                "deleteToken": paste.delete_token,
+            "Verb": "post",
+            "Object": {
+                "Id": paste.pid,
+                "ObjectType": "paste",
+                "Content": paste.content,
+                "Created": paste.created.isoformat(),
+                "Modified": paste.modified.isoformat(),
+                "Theme": paste.theme,
+                "DeleteToken": paste.delete_token,
             },
         }
 
