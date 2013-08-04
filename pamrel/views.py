@@ -18,13 +18,13 @@ def delete_paste(request, paste):
     try:
         paste = int(paste, 16)
     except ValueError:
-        error = {"error": "Invalid ID {0!r}".format(paste)}
+        error = {"Error": "Invalid ID {0!r}".format(paste)}
         return render_to_json(error, status=400)
 
     try:
         paste = Paste.objects.get(id=paste)
     except exceptions.ObjectDoesNotExist:
-        error = {"error": "Paste does not exist."}
+        error = {"Error": "Paste does not exist."}
         return render_to_json(error, status=404)
 
     try:
@@ -37,10 +37,10 @@ def delete_paste(request, paste):
         return render_to_json(error, status=403)
     else:
         context = {
-            "verb": "delete",
-            "object":{
-                "id": paste.pid,
-                "objectType": "paste",
+            "Verb": "delete",
+            "Object":{
+                "Id": paste.pid,
+                "ObjectType": "paste",
             },
         }
         paste.delete()
@@ -59,13 +59,13 @@ def paste(request, pid=None):
             paste = Paste.objects.get(id=pid)
         except ObjectDoesNotExist:
             error = {
-                "error": "Paste does not exist.",
+                "Error": "Paste does not exist.",
             }
             return render_to_json(error, status=404)
 
         if deletable(paste):
             paste.delete()
-            error = {"error": "Paste does not exist."}
+            error = {"Error": "Paste does not exist."}
             return render_to_json(error, status=404)
 
         paste.viewed += 1
@@ -108,47 +108,47 @@ def paste(request, pid=None):
             try:
                 body = json.loads(data)
             except ValueError:
-                body = {"content": data}
+                body = {"Content": data}
 
-        body = body.get("object", body)
+        body = body.get("Object", body)
 
-        if len(body) <= 1 and "content" not in body:
-            body = {"content": body.keys()[0]}
+        if len(body) <= 1 and "Content" not in body:
+            body = {"Content": body.keys()[0]}
 
-        if "content" not in body:
-            error = {"error": "You need to specify content."}
+        if "Content" not in body:
+            error = {"Error": "You need to specify content."}
             return render_to_json(error, status=400)
 
-        content = body["content"]
+        content = body["Content"]
         if type(content) == list:
             content = content[0]
 
         # got to figure out what language it is
-        if "mimeType" in body:
-            lexer = get_lexer_for_mimetype(body["mimeType"]) 
-        elif "fileName" in body:
-            lexer = get_lexer_for_filename(body["fileName"], content)
-        elif "fileExtension" in body:
+        if "MimeType" in body:
+            lexer = get_lexer_for_mimetype(body["MimeType"]) 
+        elif "FileName" in body:
+            lexer = get_lexer_for_filename(body["FileName"], content)
+        elif "FileExtension" in body:
             lexer = get_lexer_for_filename(
-                    "file.{0}".format(body["fileExtension"]),
+                    "file.{0}".format(body["FileExtension"]),
                     content
                     )
         else:
             lexer = guess_lexer(content)
 
-        if "deleteAt" in body:
-            date_format = body.get("dateFormat", "%Y-%M-%DT%H:%MZ")
-            date_at = datetime.datetime.strptime(body["deleteAt"], date_format)
+        if "DeleteAt" in body:
+            date_format = body.get("DateFormat", "%Y-%M-%DT%H:%MZ")
+            date_at = datetime.datetime.strptime(body["DeleteAt"], date_format)
         else:
             delete_at = None
 
         paste = Paste(
             content=content,
             language=lexer.aliases[0], # for some strange reason get_lexer_by_name(lexer.name) does not work >.<
-            delete_on_views=body.get("deleteOnViews", None),
+            delete_on_views=body.get("DeleteOnViews", None),
             delete_at=delete_at,
-            syntax=body.get("syntax", True),
-            numbers=body.get("numbers", False),
+            syntax=body.get("Syntax", True),
+            numbers=body.get("Numbers", False),
             delete_token=random_token(128),
             )
         
