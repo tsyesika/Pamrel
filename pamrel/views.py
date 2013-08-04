@@ -98,7 +98,7 @@ def paste(request, pid=None):
         context = {
             "paste": paste,
             "highlighted": highlighted,
-            "css":theme_path,
+            "theme_path":theme_path,
         }
 
         return render(request, "paste.html", context)
