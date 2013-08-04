@@ -7,7 +7,7 @@
         
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
         {% if theme_path %}
-            <link rel="stylesheet" type="text/css" href="{{ theme_path }}">
+            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/{{ theme_path }}">
         {% endif %}
         
         {% if paste.numbers %}

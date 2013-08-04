@@ -91,9 +91,9 @@ def paste(request, pid=None):
             theme_css = "{0}/{1}".format(css_dir, paste.theme)
 
             if os.path.isfile(lang_css):
-                theme_path = lang_css
+                theme_path = "{0}_{1}.css".format(paste.theme, paste.language)
             elif os.path.isfile(theme_css):
-                theme_path = theme_css
+                theme_path = "{0}.css".format(paste.theme)
 
         context = {
             "paste": paste,
