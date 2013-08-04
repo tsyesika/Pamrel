@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -71,6 +72,7 @@ def paste(request, pid=None):
         paste.viewed += 1
         paste.save()
 
+        css_path = None
         highlighted = False
         if paste.language is not None and paste.syntax:
             lexer = get_lexer_by_name(paste.language)
@@ -84,10 +86,19 @@ def paste(request, pid=None):
                     )
             highlighted = True
 
+            css_dir = settings.STATIC_ROOT + "themes/"
+            lang_css = "{0}/{1}_{2}.css".format(css_dir, paste.theme, paste.langauge)
+            theme_css = "{0}/{1}".format(css_dir, paste.theme)
 
-        context = {
+            if os.path.isfile(lang_css):
+                theme_path = lang_css
+            elif os.path.isfile(theme_css):
+                theme_path = theme_css
+
+       context = {
             "paste": paste,
             "highlighted": highlighted,
+            "css":css_path
         }
 
         return render(request, "paste.html", context)

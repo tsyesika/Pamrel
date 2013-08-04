@@ -6,7 +6,10 @@
         <meta charset="utf-8">
         
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ paste.theme }}.css">
+        {% if theme_path %}
+            <link rel="stylesheet" type="text/css" href="{{ theme_path }}">
+        {% endif %}
+        
         {% if paste.numbers %}
             <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/lines.css">
         {% endif %}
