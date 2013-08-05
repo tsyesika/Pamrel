@@ -20,6 +20,7 @@ type Paste struct {
     MimeType string
     Theme string
     Numbers bool
+    Syntax bool
 }
 
 type Activity struct {
@@ -27,9 +28,9 @@ type Activity struct {
     Object *Paste
 }
 
-func paste(path *string, theme string, numbers bool) {
+func paste(path *string, theme string, numbers bool, syntax bool) {
     // Pastes file at path
-    new_paste := &Paste{Theme: theme, Numbers: numbers}
+    new_paste := &Paste{Theme: theme, Numbers: numbers, Syntax: syntax}
     content, _ := ioutil.ReadFile(*path)
     new_paste.Content = string(content)
 
@@ -83,6 +84,7 @@ func main() {
     // Setup command line options
     var numbers = flag.Bool("numbers", false, "Display line numbers")
     var theme = flag.String("theme", "basic", "Theme used for displaying")
+    var syntax = flag.Bool("syntax", true, "Enable syntax highlighting")
     flag.Parse()
 
     paths := flag.Args()
@@ -100,6 +102,6 @@ func main() {
             fmt.Println()
             os.Exit(2) // could not find path
         }
-        paste(&path, *theme, *numbers)
+        paste(&path, *theme, *numbers, *syntax)
     }
 }
