@@ -77,7 +77,7 @@ func paste(path *string, theme string, numbers bool, syntax bool) {
         os.Exit(5) // server's response can't be decoded
     }
 
-    fmt.Printf("%s -> http://pamrel/%s\n", *path, paste.Object.Id)
+    fmt.Printf("%s -> http://pamrel.lu/%s\n", *path, paste.Object.Id)
 }
 
 func main() {
