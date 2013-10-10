@@ -23,9 +23,9 @@ Pamrel(1)
 <pre>
     POST     http://pamrel.lu
     {
-        "Content": "print 'This is a paste!'",
-        "FileExtension": "py",
-        "Theme": "wombat"
+        "content": "print 'This is a paste!'",
+        "fileExtension": "py",
+        "hteme": "wombat"
     }
 </pre>
 
@@ -33,7 +33,7 @@ Pamrel(1)
 
 <strong>EXAMPLE</strong><br />
 <pre>
-    $ cat some_file.py | curl -F 'Content=<-' -X POST
+    $ cat some_file.py | curl -F 'content=<-' -X POST
     
     $ pamrel --theme=wombat some_file.c
 </pre>

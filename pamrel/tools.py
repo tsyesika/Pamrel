@@ -29,12 +29,10 @@ def random_token(length):
 
 def deletable(paste):
     """ Determines if the paste should be deleted """
-    if paste.delete_at is not None:
-        if datetime.datetime.now(utc) < paste.delete_at:
-            return True
+    if paste.delete_at is not None and datetime.datetime.now(utc) < paste.delete_at:
+        return True
 
-    if paste.delete_on_views is not None:
-        if paste.viewed >= paste.delete_on_views:
-            return True
+    if paste.delete_on_views is not None and paste.viewed >= paste.delete_on_views:
+        return True
 
     return False

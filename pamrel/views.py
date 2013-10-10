@@ -19,13 +19,13 @@ def delete_paste(request, paste):
     try:
         paste = int(paste, 16)
     except ValueError:
-        error = {"Error": "Invalid ID {0!r}".format(paste)}
+        error = {"error": "Invalid ID {0!r}".format(paste)}
         return render_to_json(error, status=400)
 
     try:
         paste = Paste.objects.get(id=paste)
     except exceptions.ObjectDoesNotExist:
-        error = {"Error": "Paste does not exist."}
+        error = {"error": "Paste does not exist."}
         return render_to_json(error, status=404)
 
     try:
@@ -38,10 +38,10 @@ def delete_paste(request, paste):
         return render_to_json(error, status=403)
     else:
         context = {
-            "Verb": "delete",
-            "Object":{
-                "Id": paste.pid,
-                "ObjectType": "paste",
+            "verb": "delete",
+            "object":{
+                "id": paste.pid,
+                "objectType": "paste",
             },
         }
         paste.delete()
@@ -60,13 +60,13 @@ def paste(request, pid=None):
             paste = Paste.objects.get(id=pid)
         except ObjectDoesNotExist:
             error = {
-                "Error": "Paste does not exist.",
+                "error": "Paste does not exist.",
             }
             return render_to_json(error, status=404)
 
         if deletable(paste):
             paste.delete()
-            error = {"Error": "Paste does not exist."}
+            error = {"error": "Paste does not exist."}
             return render_to_json(error, status=404)
 
         paste.viewed += 1
@@ -119,65 +119,65 @@ def paste(request, pid=None):
             try:
                 body = json.loads(data)
             except ValueError:
-                body = {"Content": data}
+                body = {"content": data}
 
-        body = body.get("Object", body)
+        body = body.get("object", body)
 
-        if len(body) <= 1 and "Content" not in body:
-            body = {"Content": body.keys()[0]}
+        if len(body) <= 1 and "content" not in body:
+            body = {"content": body.keys()[0]}
 
-        if "Content" not in body:
-            error = {"Error": "You need to specify content."}
+        if "content" not in body:
+            error = {"error": "You need to specify content."}
             return render_to_json(error, status=400)
 
-        content = body["Content"]
+        content = body["content"]
         if type(content) == list:
             content = content[0]
 
         # got to figure out what language it is
-        if body.get("MimeType", None):
-            lexer = get_lexer_for_mimetype(body["MimeType"]) 
-        elif body.get("FileName", None):
-            lexer = get_lexer_for_filename(body["FileName"])
-        elif body.get("FileExtension", None):
+        if body.get("mimeType", None):
+            lexer = get_lexer_for_mimetype(body["mimeType"]) 
+        elif body.get("fileName", None):
+            lexer = get_lexer_for_filename(body["fileName"])
+        elif body.get("fileExtension", None):
             lexer = get_lexer_for_filename(
-                    "file.{0}".format(body["FileExtension"]),
+                    "file.{0}".format(body["fileExtension"]),
                     content
                     )
         else:
             lexer = guess_lexer(content)
 
-        if "DeleteAt" in body:
+        if "deleteAt" in body:
             date_format = body.get("DateFormat", "%Y-%M-%DT%H:%MZ")
-            date_at = datetime.datetime.strptime(body["DeleteAt"], date_format)
+            date_at = datetime.datetime.strptime(body["deleteAt"], date_format)
         else:
             delete_at = None
 
         paste = Paste(
             content=content,
             language=lexer.aliases[0], # for some strange reason get_lexer_by_name(lexer.name) does not work >.<
-            delete_on_views=body.get("DeleteOnViews", None),
+            delete_on_views=body.get("deleteOnViews", None),
             delete_at=delete_at,
-            syntax=body.get("Syntax", True),
-            numbers=body.get("Numbers", False),
+            syntax=body.get("syntax", True),
+            numbers=body.get("numbers", False),
             delete_token=random_token(128),
             )
         
-        if "Theme" in body and body["Theme"]:
-            paste.theme = body["Theme"]
+        if "theme" in body and body["theme"]:
+            paste.theme = body["theme"]
 
         paste.save()
 
         context = {
-            "Verb": "post",
-            "Object": {
-                "Id": paste.pid,
-                "ObjectType": "paste",
-                "Content": paste.content,
-                "Created": paste.created.isoformat(),
-                "Modified": paste.modified.isoformat(),
-                "Theme": paste.theme,
-                "DeleteToken": paste.delete_token,
+            "verb": "post",
+            "object": {
+                "id": paste.pid,
+                "objectType": "paste",
+                "content": paste.content,
+                "created": paste.created.isoformat(),
+                "modified": paste.modified.isoformat(),
+                "theme": paste.theme,
+                "deleteToken": paste.delete_token,
             },
         }
 
