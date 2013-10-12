@@ -15,11 +15,14 @@ class Paste(object):
     """ Represents a Paste object """
 
     id = None
+    filename = None
     theme = None
     created = None
     modified = None
     numbers = False
     token = None
+    deleteOnDate = None
+    deleteOnView = None
     
     def __init__(self, filename, **kwargs):
         self.filename = filename
@@ -28,7 +31,10 @@ class Paste(object):
 
     def __repr__(self):
         if self.id is not None:
-            return "{server}/{id}".format(server=SERVER, id=self.id)
+            return "{filename} => {server}/{id}".format(
+                filename=self.filename,
+                server=SERVER,
+                id=self.id)
         return self.filename
 
     def __str__(self):
@@ -74,6 +80,17 @@ class Paste(object):
         self.created = data["object"]["created"]
         self.modified = data["object"]["modified"]
         self.token = data["object"]["token"]
+
+    def serialize(self):
+        paste = {
+            "created": self.created,
+            "token": self.token,
+            "modified": self.modified,
+            "theme": self.theme,
+            "deleteOnViews": self.deleteOnView,
+            "deleteOnDate": self.deleteOnDate,
+        }
+        return paste
 
 if __name__ == "__main__":
     # Make parser for CLI arguments
@@ -122,7 +139,32 @@ if __name__ == "__main__":
     options = dict([(o, getattr(options, o)) for o in dir(options)
                      if not o.startswith("_")])
 
-    for arg in args:
+    for i, arg in enumerate(args):
         paste = Paste(filename=arg, **options)
         paste.post()
         print paste
+        args[i] = paste
+
+    # Store the pastes on FS
+    try:
+        store = os.path.expanduser(STORE)
+        if os.path.exists(store):
+            fp = open(store, "r+")
+            data = json.loads(fp.read())
+        else:
+            fp = open(store, "w")
+            data = {}
+        fp.seek(0)
+        for paste in args:
+            data[paste.id] = paste.serialize()
+        fp.write(json.dumps(data, indent=4, separators=(',', ': ')))
+        fp.close()
+    except (IOError, ValueError):
+        raise
+        print "[Error] Could not save paste information to {0}".format(STORE)
+        print "        below are the delete tokens which can be"
+        print "        used to alter or delete the paste"
+        print
+        for paste in args:
+            print "{0} => {1}".format(paste.filename, paste.token)
+ 
