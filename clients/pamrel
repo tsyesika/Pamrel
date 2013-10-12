@@ -4,100 +4,125 @@ import urllib2
 import os
 import sys
 
+from optparse import OptionParser
+from datetime import datetime
 
-server = "http://pamrel.lu"
+# Change at will
+SERVER = "http://pamrel.lu"
+STORE = "~/.pamrel"
 
-en_help_str = "{0} [--theme=theme] [--numbers=on/off] <file>".format(sys.argv[0])
-pastes = os.path.expanduser("~/.pamrel")
+class Paste(object):
+    """ Represents a Paste object """
+
+    id = None
+    theme = None
+    created = None
+    modified = None
+    numbers = False
+    token = None
+    
+    def __init__(self, filename, **kwargs):
+        self.filename = filename
+        for arg, value in kwargs.items():
+            setattr(self, arg, value)
+
+    def __repr__(self):
+        if self.id is not None:
+            return "{server}/{id}".format(server=SERVER, id=self.id)
+        return self.filename
+
+    def __str__(self):
+        return str(repr(self))
+
+    @property
+    def objectType(self):
+        return "paste"
+
+    @property
+    def fileType(self):
+        return self.filename.split(".")[-1]
+
+    @property
+    def fileName(self):
+        return self.filename.split("/")[-1]
+
+    def post(self):
+        """ Sends post to server """
+        context = {
+            "content": open(self.filename, "r").read(),
+            "fileName": self.fileName,
+            "fileExtension": self.fileType,
+            "numbers": self.numbers
+        }
+
+        if self.theme is not None:
+            paste["theme"] = theme
+
+        # Paste to the server
+        pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(SERVER, data=json.dumps(context))
+        request.add_header("Content-Type", "application/json")
+        request.get_method = lambda: "POST"
+        self.unserialize(pamreltu.open(request).read())
+
+    def unserialize(self, data):
+        """ Loads data onto paste """
+        if isinstance(data, basestring):
+            data = json.loads(data)
+        self.id = data["object"]["id"]
+        self.theme = data["object"]["theme"]
+        self.created = data["object"]["created"]
+        self.modified = data["object"]["modified"]
+        self.token = data["object"]["token"]
 
 if __name__ == "__main__":
-    if len(sys.argv) <= 1 or "-h" in sys.argv or "--help" in sys.argv:
-        print(en_help_str)
+    # Make parser for CLI arguments
+    parser = OptionParser()
+    
+    parser.add_option("-n", "--numbers",
+                      default=False,
+                      action="store_true",
+                      dest="numbers",
+                      help="Add line numbers to the paste(s)")
+
+    parser.add_option("-d", "--delete",
+                      default=False,
+                      action="store_true",
+                      dest="delete",
+                      help="Deletes the paste(s) specified as URLs")
+
+    parser.add_option("-s", "--syntax",
+                      default=False,
+                      action="store_true",
+                      dest="syntax",
+                      help="Enables syntax highlighting on the paste(s)")
+
+    parser.add_option("--server",
+                      dest="server",
+                      help="The server you want to send the paste(s) to")
+
+    parser.add_option("--theme",
+                      dest="theme",
+                      help="The theme used to display the paste(s)")
+
+    parser.add_option("--delete-on-date",
+                      dest="deleteOnDate",
+                      help="Delete the paste(s) on the date specified")
+    
+    parser.add_option("--delete-on-views",
+                      dest="deleteOnView",
+                      help="Delete the paste(s) on the number of views specified")
+
+    (options, args) = parser.parse_args()
+
+    if not args:
+        sys.stderr.write("No paste specified, use -h or --help to get usage\n")
         sys.exit()
 
-    paste = sys.argv[-1]
+    options = dict([(o, getattr(options, o)) for o in dir(options)
+                     if not o.startswith("_")])
 
-    if paste.find(".") != -1:
-        file_type = paste.split(".")[-1]
-    else:
-        file_type = None
-
-    # check the file exists
-    if not os.path.isfile(pastes):
-        f = open(pastes, "w")
-        f.close()
-
-    theme = None
-    numbers = False
-    delete = False
-    for arg in sys.argv:
-        if arg.startswith("--theme="):
-            theme = arg.split("=", 1)[1]
-        elif arg.startswith("--numbers="):
-            numbers = arg.split("=", 1)[1]
-            if numbers not in ["on", "off"]:
-                print "Unknown --numbers={0}".format(numbers)
-                sys.exit()
-            numbers = True if numbers == "on" else False
-        elif arg.startswith("--delete="):
-            delete = arg.split("=", 1)[1]
-            if delete.startswith(server):
-                delete = delete.split("/")[-1]
-    if delete:
-        objects = json.loads(open(pastes).read())
-        if delete in objects.keys():
-            token = objects[delete]["deleteToken"]
-            pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
-            request = urllib2.Request("{0}/{1}".format(server, id), data=token)
-            request.get_method = lambda: "DELETE"
-            paste = json.loads(pamreltu.open(request).read())
-            if "error" in paste:
-                print "[ERROR] {0}".format(paste)
-            else:
-                print "Success!"
-        else:
-            print "No delete token {0}".format(delete)
-        sys.exit()  
-
-    context = {
-        "verb": "post",
-        "object": {
-            "content": open(paste).read(),
-            "fileExtension": file_type,
-            "theme": theme,
-            "numbers": numbers,
-        }
-    }
-
-    pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(server, data=json.dumps(context))
-    request.add_header("Content-Type", "application/json")
-    request.get_method = lambda: "POST"
-    paste = json.loads(pamreltu.open(request).read())
-
-    if "error" in paste:
-        print("[Error] {0}".format(paste["error"]))
-
-    # save delete token
-    f = open(pastes, "r")
-    try:
-        objects = json.loads(f.read())
-    except ValueError:
-        objects = dict()
-    f.close()
-    objects[paste["object"]["id"]] = paste["object"].copy()
-    # for space saving remove the content
-    del objects[paste["object"]["id"]]["content"]
-    f = open(pastes, "w")
-    f.write(json.dumps(objects, sort_keys=True, indent=4, separators=(',', ': ')))
-    f.close()
-
-    url = "{server}/{pid}".format(server=server, pid=paste["object"]["id"])
-
-    if "-o" in sys.argv:
-        # open in browser
-        import webbrowser
-        webbrowser.open(url)
-        sys.exit()
-
-    print(url)
+    for arg in args:
+        paste = Paste(filename=arg, **options)
+        paste.post()
+        print paste

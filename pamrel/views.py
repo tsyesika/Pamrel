@@ -177,7 +177,7 @@ def paste(request, pid=None):
                 "created": paste.created.isoformat(),
                 "modified": paste.modified.isoformat(),
                 "theme": paste.theme,
-                "deleteToken": paste.delete_token,
+                "token": paste.delete_token,
             },
         }
 
