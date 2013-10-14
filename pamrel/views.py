@@ -139,17 +139,24 @@ def paste(request, pid=None):
             content = content[0]
 
         # got to figure out what language it is
-        if body.get("mimeType", None):
-            lexer = get_lexer_for_mimetype(body["mimeType"]) 
-        elif body.get("fileName", None):
-            lexer = get_lexer_for_filename(body["fileName"])
-        elif body.get("fileExtension", None):
-            lexer = get_lexer_for_filename(
+        try:
+            if body.get("mimeType", None):
+                lexer = get_lexer_for_mimetype(body["mimeType"]) 
+            elif body.get("fileName", None):
+                lexer = get_lexer_for_filename(body["fileName"])
+            elif body.get("fileExtension", None):
+                lexer = get_lexer_for_filename(
                     "file.{0}".format(body["fileExtension"]),
                     content
                     )
-        else:
-            lexer = guess_lexer(content)
+            else:
+                lexer = guess_lexer(content)
+        except Exception:
+            # No lexer found.
+            body["syntax"] = False # turn syntax highlighting off
+            class MockLexer(object):
+                aliases = ["PlainText"]
+            lexer = MockLexer()
 
         if "deleteAt" in body:
             date_format = body.get("DateFormat", "%Y-%M-%DT%H:%MZ")
