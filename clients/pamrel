@@ -24,10 +24,12 @@ class Paste(object):
     deleteOnDate = None
     deleteOnView = None
     
-    def __init__(self, filename, **kwargs):
-        self.filename = filename
+    def __init__(self, **kwargs):
         for arg, value in kwargs.items():
             setattr(self, arg, value)
+
+        if self.id is None and self.filename is None:
+            raise Exception("ID or filename must be specified")
 
     def __repr__(self):
         if self.id is not None:
@@ -62,7 +64,7 @@ class Paste(object):
         }
 
         if self.theme is not None:
-            paste["theme"] = theme
+            context["theme"] = self.theme
 
         # Paste to the server
         pamreltu = urllib2.build_opener(urllib2.HTTPHandler)
@@ -167,4 +169,3 @@ if __name__ == "__main__":
         print
         for paste in args:
             print "{0} => {1}".format(paste.filename, paste.token)
- 

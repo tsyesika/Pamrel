@@ -55,7 +55,11 @@ def paste(request, pid=None):
         return delete_paste(request, pid)
 
     if pid is not None and request.method == "GET":
-        pid = int(pid, 16)
+        try:
+            pid = int(pid, 16)
+        except ValueError:
+            error = {"error": "Invalid ID {0!r}".format(pid)}
+            return render_to_json(error, status=400)
         try:
             paste = Paste.objects.get(id=pid)
         except ObjectDoesNotExist:
