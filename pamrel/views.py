@@ -200,7 +200,6 @@ class PasteView(DetailView):
 
 class RawPasteView(PasteView):
     """ Same as PasteView but returns unformatted paste as text/plain """
-    template_name = "raw.html"
 
     def highlight_paste(self):
         return None
@@ -213,6 +212,15 @@ class RawPasteView(PasteView):
                 pass
 
         return self.plain_response(context, *args, **kwargs)
+
+    def render_to_response(self, context, *args, **kwargs):
+        if self.object is None:
+            return self.plain_response("Error: Paste not found")
+        
+        return HttpResponse(
+            self.object.content,
+            content_type="text/plain",
+        )
 
 class FilePasteView(PasteView):
     """ Represents files as if they come from the DB as regular Pastes """
