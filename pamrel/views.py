@@ -107,7 +107,7 @@ class PasteView(DetailView):
         else:
             return self.plain_response(request.build_absolute_uri(
                 reverse("paste", kwargs={"pk": paste.pid})
-            ))
+            )) + "\n"
 
     def generate_token(self, length):
         """ Generates a secure random token to allow access to Paste again """
