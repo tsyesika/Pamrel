@@ -61,7 +61,7 @@ class PasteView(DetailView):
             "delete_at": None,
             "delete_on_views": 0,
             "language": None,
-            "theme": None,
+            "theme": "basic",
             "delete_token": self.generate_token(self.token_length),
         }
 
@@ -138,7 +138,10 @@ class PasteView(DetailView):
 
     def highlight_paste(self):
         """ Determines Lexer and highlights context """
-        lexer = get_lexer_by_name(self.object.language)
+        try:
+            lexer = get_lexer_by_name(self.object.language)
+        except Exception:
+            return # todo: do something more useful than just return.
         numbers = "table" if self.object.numbers else False
         self.object.content = highlight(
             self.object.content,
@@ -217,6 +220,7 @@ class FilePasteView(PasteView):
     path = None
     pid = None
     language = "PlainText"
+    theme = "basic"
     highlighted = False
     numbers = False
     syntax = False
@@ -235,6 +239,7 @@ class FilePasteView(PasteView):
         class FilePaste(object):
             attrs = [
                 "pid",
+                "theme",
                 "content",
                 "language",
                 "numbers",
