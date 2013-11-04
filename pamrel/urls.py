@@ -1,8 +1,12 @@
 from django.conf.urls import patterns, include, url
+from pamrel.views import PasteView, IndexView, LicenceView, RawPasteView
 
 urlpatterns = patterns("",
-    url(r"^$", "pamrel.views.api", name="docs"),
-    url(r"^licence$", "pamrel.views.licence", name="licence"),
-    url(r"^license$", "pamrel.views.licence", name="licence"),
-    url(r"^(?P<pid>\w+)$", "pamrel.views.paste", name="paste"),
+    url(r"^$", IndexView.as_view(), name="index"),
+    url(r"^licence$", LicenceView.as_view(), name="licence"),
+    url(r"^license$", LicenceView.as_view(), name="license"),
+    url(r"^(?P<pk>\w+)/", include(patterns("",
+        url("^$", PasteView.as_view(), name="paste"),
+        url("^raw$", RawPasteView.as_view(), name="raw-paste")
+    )))
 )

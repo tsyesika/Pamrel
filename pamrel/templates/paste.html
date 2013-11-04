@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title> Paste - {{ paste.pid }} </title>
+        <title> Paste - {{ object.pid }} </title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta charset="utf-8">
         
@@ -10,16 +10,16 @@
             <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ theme_path }}">
         {% endif %}
         
-        {% if paste.numbers %}
+        {% if object.numbers %}
             <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/lines.css">
         {% endif %}
     </head>
     <body>
         <div class="code">
-            {% if highlighted %}
-                {{ paste.content|safe }}
+            {% if object.language !=  None %}
+                {{ object.content|safe }}
             {% else %}
-                <pre>{{ paste.content }}</pre>
+                <pre>{{ object.content }}</pre>
             {% endif %}
         </div>
     </body>

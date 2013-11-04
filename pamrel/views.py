@@ -1,234 +1,266 @@
 import json
+import string
+import random
 import os
+
+from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.generic import DetailView
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 
 from pygments import highlight
-from pygments.lexers import (guess_lexer, get_lexer_by_name, get_lexer_for_filename,
-                             get_lexer_for_mimetype)
+from pygments.lexers import (guess_lexer, get_lexer_by_name,
+                             get_lexer_for_filename, get_lexer_for_mimetype)
 from pygments.formatters import HtmlFormatter
 
-from pamrel.tools import render_to_json, random_token, deletable
 from pamrel.models import Paste
 
-@csrf_exempt
-def delete_paste(request, paste):
-    try:
-        paste = int(paste, 16)
-    except ValueError:
-        error = {"error": "Invalid ID {0!r}".format(paste)}
-        return render_to_json(error, status=400)
+class PasteView(DetailView):
+    """ View for interacting with a Paste """
 
-    try:
-        paste = Paste.objects.get(id=paste)
-    except exceptions.ObjectDoesNotExist:
-        error = {"error": "Paste does not exist."}
-        return render_to_json(error, status=404)
+    template_name = "paste.html"
+    model = Paste
+    token_length = 128
 
-    try:
-        token = json.loads(request.body)
-    except:
-        token = request.body
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(PasteView, self).dispatch(*args, **kwargs)
 
-    if paste.delete_token != token:
-        error = {"error": "Incorrect delete token"}
-        return render_to_json(error, status=403)
-    else:
-        context = {
-            "verb": "delete",
-            "object":{
-                "id": paste.pid,
-                "objectType": "paste",
-            },
-        }
-        paste.delete()
-        return render_to_json(context)
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
 
-
-
-@csrf_exempt
-def paste(request, pid=None):
-    if request.method == "DELETE":
-        return delete_paste(request, pid)
-
-    if pid is not None and request.method == "GET":
+        # Get an convert from base 16 -> base 10 the pk
+        pk = self.kwargs.get(self.pk_url_kwarg, None)
+        if pk is None:
+            return None
         try:
-            pid = int(pid, 16)
+            pk = int(pk, 16)
         except ValueError:
-            error = {"error": "Invalid ID {0!r}".format(pid)}
-            return render_to_json(error, status=400)
+            # Not a base 16 number
+            return None
+            
         try:
-            paste = Paste.objects.get(id=pid)
+            obj = queryset.get(pk=pk)
         except ObjectDoesNotExist:
-            error = {
-                "error": "Paste does not exist.",
-            }
-            return render_to_json(error, status=404)
+            return None
 
-        if deletable(paste):
-            paste.delete()
-            error = {"error": "Paste does not exist."}
-            return render_to_json(error, status=404)
+        return obj
 
-        paste.viewed += 1
+    def post(self, request, *args, **kwargs):
+        """ Makes a new Paste """
+        data = {
+            "content": "",
+            "syntax": False,
+            "numbers": False,
+            "delete_at": None,
+            "delete_on_views": 0,
+            "language": None,
+            "theme": None,
+            "delete_token": self.generate_token(self.token_length),
+        }
+
+        # We allow just data in order to easily post via curl
+        try:
+            raw_data = json.loads(request.body)
+        except (ValueError, TypeError):
+            content = request.POST.get("content", request.POST)
+            raw_data = {"content": content}
+
+        if not raw_data["content"]:
+            # No POST data specified
+            return self.json_response(
+                {"error": "No content specified in Paste."},
+                status=400
+            )
+
+        data["numbers"] = raw_data.get("numbers", data["numbers"])
+        data["syntax"] = raw_data.get("syntax", data["syntax"])
+        data["theme"] = raw_data.get("theme", data["theme"])
+        data["content"] = raw_data["content"]
+
+        # Figure out what language it is
+        data["language"] = self.detect_language(raw_data)
+        if data["language"] == "PlainText":
+            # PlainText doesn't need syntax
+            data["syntax"] = False
+
+
+        if raw_data.get("deleteAt"):
+            # Delete paste at this date!
+            data_format = data.get("DateFormat", "%Y-%M-%DT%H:%MZ")
+            data["delete_at"] = datetime.strptime(data["deleteAt"], date_format)
+        
+        paste = Paste(**data)
         paste.save()
 
-        theme_path = None
-        highlighted = False
-        if paste.language is not None and paste.syntax:
-            lexer = get_lexer_by_name(paste.language)
-            numbers = "table" if paste.numbers else False
-            paste.content = highlight(
-                    paste.content,
-                    lexer, 
-                    HtmlFormatter(
-                        linenos=numbers,
-                        ),
-                    )
-            highlighted = True
-
-            css_dir = settings.STATIC_ROOT + "themes/"
-            lang_css = "{0}/{1}_{2}.css".format(css_dir, paste.theme, paste.language)
-            theme_css = "{0}/{1}.css".format(css_dir, paste.theme)
-
-            if os.path.isfile(lang_css):
-                theme_path = "{0}_{1}.css".format(paste.theme, paste.language)
-            elif os.path.isfile(theme_css):
-                theme_path = "{0}.css".format(paste.theme)
-
-        context = {
-            "paste": paste,
-            "highlighted": highlighted,
-            "theme_path":theme_path,
-        }
-
-        return render(request, "paste.html", context)
-
-    elif pid != None and request.method == "POST":
-        error = {
-            "error": "You can't specify a paste ID when making a new post.",
-        }
-
-        return render_to_json(error, status=400)
-
-    elif request.method == "POST":
-        # making a new paste :D
-        if request.POST:
-            body = dict(request.POST)
+        # If they've claimed to give them JSON we will give them JOSN back
+        if request.META.get("CONTENT_TYPE").lower() == "application/json":
+            serialized_data = paste.serialize()
+            del serialized_data["content"]
+            return self.json_response(serialized_data)
         else:
-            data = request.body
-            try:
-                body = json.loads(data)
-            except ValueError:
-                body = {"content": data}
+            return self.plain_response(
+                reverse("paste", kwargs={"pk": paste.pid})
+            )
 
-        body = body.get("object", body)
+    def generate_token(self, length):
+        """ Generates a secure random token to allow access to Paste again """
+        token = []
+        alphabet = list(string.ascii_letters + string.digits + string.punctuation)
+        for i in range(length):
+            token += random.choice(alphabet)
+        return "".join(token)
 
-        if len(body) <= 1 and "content" not in body:
-            body = {"content": body.keys()[0]}
-
-        if "content" not in body:
-            error = {"error": "You need to specify content."}
-            return render_to_json(error, status=400)
-
-        content = body["content"]
-        if type(content) == list:
-            content = content[0]
-
-        # got to figure out what language it is
+    def detect_language(self, data):
+        """ Detects the language of the paste """
         try:
-            if body.get("mimeType", None):
-                lexer = get_lexer_for_mimetype(body["mimeType"]) 
-            elif body.get("fileName", None):
-                lexer = get_lexer_for_filename(body["fileName"])
-            elif body.get("fileExtension", None):
-                lexer = get_lexer_for_filename(
-                    "file.{0}".format(body["fileExtension"]),
-                    content
-                    )
+            if data.get("mimeType"):
+                lexer = get_lexer_for_mimetype(data["mimeType"])
+            elif data.get("fileName") or data.get("fileExtension"):
+                data["fileName"] = "file.{0}".format(data["fileExtension"])
+                lexer = get_lexer_for_filename(data["fileName"])
             else:
                 lexer = guess_lexer(content)
+
         except Exception:
-            # No lexer found.
-            body["syntax"] = False # turn syntax highlighting off
-            class MockLexer(object):
-                aliases = ["PlainText"]
-            lexer = MockLexer()
-
-        if "deleteAt" in body:
-            date_format = body.get("DateFormat", "%Y-%M-%DT%H:%MZ")
-            date_at = datetime.datetime.strptime(body["deleteAt"], date_format)
-        else:
-            delete_at = None
-
-        paste = Paste(
-            content=content,
-            language=lexer.aliases[0], # for some strange reason get_lexer_by_name(lexer.name) does not work >.<
-            delete_on_views=body.get("deleteOnViews", None),
-            delete_at=delete_at,
-            syntax=body.get("syntax", True),
-            numbers=body.get("numbers", False),
-            delete_token=random_token(128),
-            )
+            # todo: find out exactly what exceptiosn it returns
+            return "PlainText"
         
-        if "theme" in body and body["theme"]:
-            paste.theme = body["theme"]
+        # for some unknown reason get_lexer_by_name(lexer.name) doesn't work >.>
+        # however get_lexer_by_name(lexer.aliases[0]) does.
+        return lexer.aliases[0]
 
-        paste.save()
+    def highlight_paste(self):
+        """ Determines Lexer and highlights context """
+        lexer = get_lexer_by_name(self.object.language)
+        numbers = "table" if self.object.numbers else False
+        self.object.content = highlight(
+            self.object.content,
+            lexer, 
+            HtmlFormatter(
+                linenos=self.object.numbers,
+            ),
+        )
 
-        context = {
-            "verb": "post",
-            "object": {
-                "id": paste.pid,
-                "objectType": "paste",
-                "content": paste.content,
-                "created": paste.created.isoformat(),
-                "modified": paste.modified.isoformat(),
-                "theme": paste.theme,
-                "token": paste.delete_token,
-            },
-        }
+    def get_context_data(self, **kwargs):
+        context = super(PasteView, self).get_context_data(**kwargs)
+        if self.object is None:
+            return {}
 
-        return render_to_json(context)
+        context["theme_path"] = "{0}.css".format(self.object.theme)
 
-@csrf_exempt
-def api(request):
-    if request.method == "DELETE":
-        try:
-            pasteid = json.loads(request.body)
-        except ValueError:
-            error = {"error": "Cannot decode request"}
-            return render_to_json(error, status=400)
+        if self.object.language is not None:
+            self.highlight_paste()
+        else:
+            context["highlighted"] = True
+
+        return context
+
+    def json_response(self, context, status=200):
+        """ Returns a JSON response """
+        if isinstance(context, dict):
+            context = json.dumps(context)
+        
+        return HttpResponse(
+            context,
+            content_type="application/json",
+            status=status
+        )
+
+    def plain_response(self, context, status=200):
+        return HttpResponse(
+            context,
+            content_type="text/plain",
+            status=status
+        )
+
+    def render_to_response(self, context, *args, **kwargs):
+        if not context and self.object is None:
+            # Somethings gone wrong, give our JSON 404
+            return self.json_response(
+                {"error": "Could not fine paste."},
+                status=404
+            )
+
+        return super(PasteView, self).render_to_response(
+            context=context,
+            *args,
+            **kwargs
+        )
+        
+
+class RawPasteView(PasteView):
+    """ Same as PasteView but returns unformatted paste as text/plain """
+    template_name = "raw.html"
+
+    def highlight_paste(self):
+        return None
+
+    def json_response(self, context, *args, **kwargs):
+        if isinstance(context, basestring):
+            try:
+                context = json.loads(context)
+            except ValueError:
+                pass
+
+        return self.plain_response(context, *args, **kwargs)
+
+class FilePasteView(PasteView):
+    """ Represents files as if they come from the DB as regular Pastes """
     
-        pid = pasteid.get("object", {}).get("id", None)
-        return delete_paste(pid)
+    path = None
+    pid = None
+    language = "PlainText"
+    highlighted = False
+    numbers = False
+    syntax = False
 
-    elif request.method != "GET":
-        return paste(request)
+    def __init__(self, *args, **kwargs):
+        super(FilePasteView, self).__init__(*args, **kwargs)
+        if not os.path.isfile(self.path):
+            self.content = "Could not find paste"
+        else:
+            self.content = open(self.path).read() 
 
-    # Lets return the home page
-    class Home(object):
-        pid = "MANUAL"
-        content = open(settings.HOME).read()
-        numbers = False
+    def get_object(self, queryset=None):
+        if not os.path.isfile(self.path):
+            return None # No object!
 
-    context = {
-        "paste": Home(),
-        "highlighted": True,
-    }
-    return render(request, "paste.html", context)
+        class FilePaste(object):
+            attrs = [
+                "pid",
+                "content",
+                "language",
+                "numbers",
+                "syntax"
+            ]
+            
+            def __init__(self, object, attrs=None):
+                attrs = attrs or self.attrs
+                for attr in attrs:
+                    value = getattr(object, attr)
+                    setattr(self, attr, value)
+        
+        return FilePaste(object=self)
 
-def licence(request):
-    class Licence(object):
-        pid = "LICENCE"
-        content = open(settings.LICENCE).read()
-        numbers = False
+    def get_context_data(self, **kwargs):
+        context = super(FilePasteView, self).get_context_data(**kwargs)
+        context["highlighted"] = self.highlighted
+        return context
 
-    context = {
-        "paste": Licence(),
-    }
+class IndexView(FilePasteView):
+    """ Display the home/index page """
+    pid = "MANUAL"
+    path = settings.HOME
+    highlighted = True
 
-    return render(request, "paste.html", context)
+class LicenceView(FilePasteView):
+    """ Display the AGPLv3 (Pamrel's licence) """
+    pid = "LICENCE"
+    path = settings.LICENCE

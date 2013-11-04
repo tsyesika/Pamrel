@@ -26,3 +26,27 @@ class Paste(models.Model):
     def pid(self):
         """ Goes from Paste.id -> base64 encoded string """
         return hex(self.id).lstrip("0x").rstrip("L")
+
+    def serialize(self):
+        """ Convert model to serializable object (dict) """
+        context = {
+            "id": self.pid,
+            "content": self.content,
+            "theme": self.theme,
+            "language": self.language,
+            "token": self.delete_token,
+
+            "delete_at": self.delete_at,
+            "delete_on_views": self.delete_on_views,
+            "numbers": self.numbers,
+            "syntax": self.syntax,
+
+            "created": self.created,
+            "modified": self.modified,
+        }
+
+        for key, value in context.items():
+            if isinstance(value, datetime.datetime):
+                context[key] = value.isoformat()
+
+        return context

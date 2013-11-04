@@ -77,11 +77,11 @@ class Paste(object):
         """ Loads data onto paste """
         if isinstance(data, basestring):
             data = json.loads(data)
-        self.id = data["object"]["id"]
-        self.theme = data["object"]["theme"]
-        self.created = data["object"]["created"]
-        self.modified = data["object"]["modified"]
-        self.token = data["object"]["token"]
+        self.id = data["id"]
+        self.theme = data["theme"]
+        self.created = data["created"]
+        self.modified = data["modified"]
+        self.token = data["token"]
 
     def serialize(self):
         paste = {
