@@ -57,11 +57,11 @@ class PasteView(DetailView):
         data = {
             "content": "",
             "syntax": False,
-            "numbers": False,
+            "numbers": True,
             "delete_at": None,
             "delete_on_views": 0,
             "language": None,
-            "theme": "basic",
+            "theme": "github",
             "delete_token": self.generate_token(self.token_length),
         }
 
