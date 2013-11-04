@@ -105,9 +105,9 @@ class PasteView(DetailView):
             del serialized_data["content"]
             return self.json_response(serialized_data)
         else:
-            return self.plain_response(
+            return self.plain_response(request.build_absolute_uri(
                 reverse("paste", kwargs={"pk": paste.pid})
-            )
+            ))
 
     def generate_token(self, length):
         """ Generates a secure random token to allow access to Paste again """
