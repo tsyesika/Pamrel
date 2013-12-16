@@ -52,6 +52,13 @@ class PasteView(DetailView):
 
         return obj
 
+    def get(self, *args, **kwargs):
+        response = super(PasteView, self).get(*args, **kwargs)
+        if isinstance(self.object, Paste):
+            self.object.viewed += 1
+            self.object.save()
+        return response
+
     def post(self, request, *args, **kwargs):
         """ Makes a new Paste """
         data = {
