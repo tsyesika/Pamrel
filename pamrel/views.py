@@ -52,11 +52,21 @@ class PasteView(DetailView):
 
         return obj
 
+    def increment_paste(self, object=None):
+        """ Increments the viewed counter on a paste """
+        if object is None:
+            object = self.object
+        
+        if isinstance(self.object, Paste):
+            object.viewed += 1
+            object.save()
+            return True
+        
+        return False
+
     def get(self, *args, **kwargs):
         response = super(PasteView, self).get(*args, **kwargs)
-        if isinstance(self.object, Paste):
-            self.object.viewed += 1
-            self.object.save()
+        self.increment_paste()
         return response
 
     def post(self, request, *args, **kwargs):
@@ -228,6 +238,35 @@ class RawPasteView(PasteView):
             self.object.content,
             content_type="text/plain",
         )
+
+class MetaPasteView(PasteView):
+    """ Represents the attributes/meta data of a Paste as JSON """
+
+    def increment_paste(self, object=None):
+        """ Stop this incrementing the paste as meta isn't a view of it """
+        return False
+
+    def get_context_data(self, **kwargs):
+        context = {
+            "viewed": self.object.viewed,
+            "created": self.object.created.isoformat(),
+            "modified": self.object.modified.isoformat(),
+            "syntax": self.object.syntax,
+            "theme": self.object.theme,
+            "language": self.object.language,
+            "numbers": self.object.numbers,
+        }
+
+        if self.object.delete_at is not None:
+            context["deleteAt"] = self.object.delete_at.isoformat()
+        
+        if self.object.delete_on_views != 0:
+            context["deleteOnViews"] = self.object.delete_on_views
+
+        return context
+
+    def render_to_response(self, context):
+        return self.json_response(context)
 
 class FilePasteView(PasteView):
     """ Represents files as if they come from the DB as regular Pastes """
