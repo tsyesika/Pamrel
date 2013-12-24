@@ -17,9 +17,9 @@
     <body>
         <div class="code">
             {% if object.syntax %}
-                {{ object.content|safe }}
+                {{ content|safe }}
             {% else %}
-                <pre>{{ object.content }}</pre>
+                <pre>{{ content }}</pre>
             {% endif %}
         </div>
     </body>

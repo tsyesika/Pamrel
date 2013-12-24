@@ -73,8 +73,8 @@ class PasteView(DetailView):
         """ Makes a new Paste """
         data = {
             "content": "",
-            "syntax": False,
-            "numbers": True,
+            "syntax": True,
+            "numbers": False,
             "delete_at": None,
             "delete_on_views": 0,
             "language": None,
@@ -143,7 +143,7 @@ class PasteView(DetailView):
                 data["fileName"] = "file.{0}".format(data["fileExtension"])
                 lexer = get_lexer_for_filename(data["fileName"])
             else:
-                lexer = guess_lexer(content)
+                lexer = guess_lexer(data["content"])
 
         except Exception:
             # todo: find out exactly what exceptiosn it returns
@@ -158,9 +158,9 @@ class PasteView(DetailView):
         try:
             lexer = get_lexer_by_name(self.object.language)
         except Exception:
-            return # todo: do something more useful than just return.
+            return self.object.content
         numbers = "table" if self.object.numbers else False
-        self.object.content = highlight(
+        return highlight(
             self.object.content,
             lexer, 
             HtmlFormatter(
@@ -173,10 +173,11 @@ class PasteView(DetailView):
         if self.object is None:
             return {}
 
+        context["content"] = self.object.content
         context["theme_path"] = "{0}.css".format(self.object.theme)
 
         if self.object.language is not None:
-            self.highlight_paste()
+            context["content"] = self.highlight_paste()
         else:
             context["highlighted"] = True
 
@@ -297,7 +298,8 @@ class FilePasteView(PasteView):
                 "content",
                 "language",
                 "numbers",
-                "syntax"
+                "syntax",
+                "highlighted",
             ]
             
             def __init__(self, object, attrs=None):
