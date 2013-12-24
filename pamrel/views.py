@@ -319,7 +319,7 @@ class IndexView(FilePasteView):
     """ Display the home/index page """
     pid = "MANUAL"
     path = settings.HOME
-    highlighted = True
+    syntax = True
 
 class LicenceView(FilePasteView):
     """ Display the AGPLv3 (Pamrel's licence) """
