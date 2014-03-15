@@ -14,13 +14,12 @@ that you may find useful:
 Clients
 -------
 
-There is a python client which offers a number of options:  
-`$ pamrel --theme=wombat --syntax --numbers some_file.c`
-
-You can also use curl:  
+You can use curl:  
 `$ cat some_file.c | curl -F 'content=<-' -X POST http://pamrel.lu`
 
-I welcome others to write clients too.
+There is also the following clients:
+- [Emacs (https://github.com/cwebber/pamrel-el)](https://github.com/cwebber/pamrel-el) by Chris Webber
+- [Chocolat (https://github.com/xray7224/pamrel.chocmixin)](https://github.com/xray7224/pamrel.chocmixin) by Jessica Tallon
 
 Licence
 -------
