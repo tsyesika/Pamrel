@@ -94,7 +94,6 @@ window.onload = function () {
 				e.g.
 					tab -> insert tab
 		*/
-
 		var startPosition = this.selectionStart;
 		var endPosition = this.selectionEnd;
 		var line = this.value;
@@ -155,5 +154,7 @@ window.onload = function () {
 				languageField.value = language;
 			}
 		}
+
+		return true;
 	}
 }

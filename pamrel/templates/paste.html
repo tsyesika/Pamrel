@@ -16,9 +16,11 @@
 {% endblock %}
 
 {% block content %}
-    {% if object.syntax %}
-        {{ content|safe }}
-    {% else %}
-        <pre>{{ content }}</pre>
-    {% endif %}
+    <div class="view-paste">
+        {% if object.syntax %}
+            {{ content|safe }}
+        {% else %}
+            <pre>{{ content }}</pre>
+        {% endif %}
+    </div>
 {% endblock %}

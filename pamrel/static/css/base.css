@@ -6,10 +6,6 @@
 }
 
 html, body {
-    -o-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
     height: 100%;
 }
 
@@ -24,6 +20,11 @@ a:hover {
 }
 
 .header {
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+
     position: fixed;
     top:0;
     width: 100%;
@@ -48,8 +49,8 @@ a:hover {
     margin-right: 2%;
 }
 select {
-    -webkit-appearance: '\f07d';
-    -moz-appearance: '\f07d';
+    -webkit-appearance: none;
+    -moz-appearance: none;
     text-indent: 1px;
     text-overflow: '';
 }
@@ -87,12 +88,14 @@ textarea {
     overflow: auto;
 }
 
-.content {
+.view-paste {
     -o-user-select: all;
     -moz-user-select: all;
     -webkit-user-select: all;
     user-select: all;
+}
 
+.content {
     margin-top: 50px;
     padding: 10px;
     padding-left: 1em;
