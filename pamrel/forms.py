@@ -19,7 +19,10 @@ class PasteForm(forms.ModelForm):
 	def __init__(self, *args, **kwargs):
 		super(PasteForm, self).__init__(*args, **kwargs)
 		# Load all the choices for the languages pygments currently supports
-		self.fields['language'].choices += ((lexer[1][0], lexer[0]) for lexer in lexers.get_all_lexers())
+		languages = dict(((lexer[0], lexer[1][0]) for lexer in lexers.get_all_lexers()))
+		sorted_languages = languages.keys()
+		sorted_languages.sort()
+		self.fields['language'].choices += ((languages[name], name) for name in sorted_languages)
 		self.fields['content'].widget.attrs.update({'placeholder': '<code> ... </code>'})
 
 	def detect_language(self, data):

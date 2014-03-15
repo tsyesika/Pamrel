@@ -86,7 +86,6 @@ class PasteView(DetailView):
         try:
             lexer = lexers.get_lexer_by_name(self.object.language)
         except Exception:
-            raise
             return self.object.content
         numbers = "table" if self.object.numbers else False
         return highlight(
