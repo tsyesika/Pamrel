@@ -2,12 +2,13 @@ import json
 import string
 import random
 import os
+import glob
 
 from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.generic import DetailView, CreateView
+from django.views.generic import DetailView, CreateView, View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
@@ -23,6 +24,22 @@ class IndexView(CreateView):
     form_class = PasteForm
     model = Paste
     template_name = "new.html"
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(IndexView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form, *args, **kwargs):
+        # If they're a not pamrel.lu give them back the URL to the paste rather than a 302
+        if self.request.POST.get("webUI") or self.request.method != "POST":
+            # There must be a better way of detecting this =/
+            return super(IndexView, self).form_valid(form=form, *args, **kwargs)
+
+        self.object = form.save()
+        return HttpResponse(
+            content=self.request.build_absolute_uri(self.get_success_url()) + '\n',
+            content_type="text/plain"
+        )
 
 class PasteView(DetailView):
     """ View for interacting with a Paste """
@@ -130,7 +147,7 @@ class PasteView(DetailView):
         )
 
     def render_to_response(self, context, *args, **kwargs):
-        if not context and self.object is None:
+        if self.object is None:
             # Somethings gone wrong, give our JSON 404
             class Error(object):
                 number = 404
@@ -169,7 +186,12 @@ class RawPasteView(PasteView):
             content_type="text/plain",
         )
 
-class MetaPasteView(PasteView):
+
+##
+# API views
+##
+
+class APIMetaPasteView(PasteView):
     """ Represents the attributes/meta data of a Paste as JSON """
 
     def increment_paste(self, object=None):
@@ -197,3 +219,20 @@ class MetaPasteView(PasteView):
 
     def render_to_response(self, context):
         return self.json_response(context)
+
+class APIThemeListView(View):
+    """ List all themes on the pastebin """
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(
+            json.dumps([name.split('.', 1)[0].split('/')[-1] for name in glob.glob(os.path.join(settings.STATIC_ROOT, 'themes', '*.css'))]),
+            content_type="application/json"
+        )
+
+class APILanguageListView(View):
+    """ List all themes pastebin has """
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(
+            json.dumps(dict(((lexer[0], lexer[1][0]) for lexer in lexers.get_all_lexers()))),
+            content_type="application/json"
+        )

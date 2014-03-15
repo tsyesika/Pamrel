@@ -1,5 +1,11 @@
 *.py[cod]
 
+# Mac .DS_Store files
+*.DS_Store
+
+# django settings
+*settings.py*
+
 # C extensions
 *.so
 

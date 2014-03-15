@@ -8,7 +8,7 @@ class PasteForm(forms.ModelForm):
 	""" Form to create a paste """
 
 	language = forms.ChoiceField(
-		required=True,
+		required=False,
 		choices=(('', 'Auto Detect'),)
 	)
 
@@ -16,8 +16,8 @@ class PasteForm(forms.ModelForm):
 		model = models.Paste
 		fields = ["content"]
 
-	def __init__(self, *args, **kwargs):
-		super(PasteForm, self).__init__(*args, **kwargs)
+	def __init__(self, initial=None, *args, **kwargs):
+		super(PasteForm, self).__init__(initial=initial, *args, **kwargs)
 		# Load all the choices for the languages pygments currently supports
 		languages = dict(((lexer[0], lexer[1][0]) for lexer in lexers.get_all_lexers()))
 		sorted_languages = languages.keys()
@@ -40,7 +40,7 @@ class PasteForm(forms.ModelForm):
 		obj = super(PasteForm, self).save(*args, **kwargs)
 
 		# Set language.
-		if self.cleaned_data.get("language", None):
+		if not self.cleaned_data.get("language", ""):
 			obj.language = self.detect_language(self.cleaned_data["content"])
 		else:
 			obj.language = self.cleaned_data['language']
