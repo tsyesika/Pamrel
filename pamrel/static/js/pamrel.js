@@ -150,7 +150,7 @@ window.onload = function () {
 			// Enter/Carrage return
 			var languageField = document.getElementById('id_language');
 			var language = detectLanguage(contentElement.value);
-			if (language && languageField.value === 'None') {
+			if (language && languageField.value === '') {
 				languageField.value = language;
 			}
 		}
