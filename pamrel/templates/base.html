@@ -1,0 +1,29 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        {%  if paste %}
+            <title> Pamrel - {{ paste.pid }} </title>
+        {% else %}
+            <title> Pamrel </title>
+        {% endif %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+        <link href='http://fonts.googleapis.com/css?family=Oxygen' rel='stylesheet' type='text/css'>
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        {% block css %}{% endblock %}
+
+        <script type="text/javascript" src="{% static 'js/pamrel.js' %}"></script>
+    </head>
+    <body>
+        <form method="POST" action="{% url 'new' %}">
+            {% csrf_token %}
+            <div class="header">
+                <a href="{% url 'new' %}" class="title">Pamrel</a>
+                <span class="controls">{% block controls %}{% endblock %}</span>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </form>
+    </body>
+</html>

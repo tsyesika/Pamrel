@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+	<div class="error">
+		<div class="error-number">
+			{{ error.number }}
+		</div>
+
+		<div class="error-message">
+			<p>{{ error.message }}</p>
+		</div>
+	</div>
+{% endblock %}
