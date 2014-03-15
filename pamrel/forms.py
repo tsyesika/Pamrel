@@ -9,7 +9,7 @@ class PasteForm(forms.ModelForm):
 
 	language = forms.ChoiceField(
 		required=True,
-		choices=((None, 'Auto Detect'),)
+		choices=(('', 'Auto Detect'),)
 	)
 
 	class Meta:
@@ -40,7 +40,7 @@ class PasteForm(forms.ModelForm):
 		obj = super(PasteForm, self).save(*args, **kwargs)
 
 		# Set language.
-		if self.cleaned_data.get("language", None) is None:
+		if self.cleaned_data.get("language", None):
 			obj.language = self.detect_language(self.cleaned_data["content"])
 		else:
 			obj.language = self.cleaned_data['language']
