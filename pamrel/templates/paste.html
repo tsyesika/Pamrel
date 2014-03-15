@@ -1,26 +1,24 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title> Paste - {{ object.pid }} </title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta charset="utf-8">
-        
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/base.css">
-        {% if theme_path %}
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ theme_path }}">
-        {% endif %}
-        
-        {% if object.numbers %}
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/lines.css">
-        {% endif %}
-    </head>
-    <body>
-        <div class="code">
-            {% if object.syntax %}
-                {{ content|safe }}
-            {% else %}
-                <pre>{{ content }}</pre>
-            {% endif %}
-        </div>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block css %}
+    {% if theme_path %}
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ theme_path }}">
+    {% endif %}
+{% endblock %}
+
+{% block controls %}
+    <span class="tooltip" title="Views: {{ paste.viewed }}"><i class="fa fa-eye"></i></span>
+    {% if paste.modified == paste.created %}
+        <span class="tooltip" title="Created: {{ paste.created|timesince }} ago"><i class="fa fa-calendar"></i></span>
+    {% else %}
+        <span class="tooltip" title="Modified: {{ paste.modified|timesince }} ago"><i class="fa fa-calendar"></i></span>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if object.syntax %}
+        {{ content|safe }}
+    {% else %}
+        <pre>{{ content }}</pre>
+    {% endif %}
+{% endblock %}

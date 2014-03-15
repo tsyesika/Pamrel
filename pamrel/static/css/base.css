@@ -1,4 +1,160 @@
+@import url(http://fonts.googleapis.com/css?family=Oxygen);
+
 * {
     margin: 0px;
     padding: 0px;
+}
+
+html, body {
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    height: 100%;
+}
+
+a {
+    font-style: none;
+    color: #fff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.header {
+    position: fixed;
+    top:0;
+    width: 100%;
+    font-family: "Oxygen", "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: #4f4f4f;
+    color: #fff;
+    padding-top: 0.5em;
+    padding-bottom: 0.75em;
+    padding-left: 1em;
+    padding-right: 1em;
+    z-index: 999999;
+}
+
+.title {
+    text-align: left;
+    font-size: 16pt;
+}
+
+.controls {
+    font-size: 12pt;
+    float: right;
+    margin-right: 2%;
+}
+select {
+    -webkit-appearance: '\f07d';
+    -moz-appearance: '\f07d';
+    text-indent: 1px;
+    text-overflow: '';
+}
+
+#id_language {
+    font-family: "Oxygen", "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    border-radius: 2px;
+    border: 1px solid #D9D9D9;
+
+}
+
+button {
+    background-color: transparent;
+    color: #bfbfbf;
+    border: 1px solid #bfbfbf;
+    width: 60px;
+    line-height: 25px;
+    font-size: 10pt;
+    outline: none;
+    border-radius: 2px;
+}
+
+button:hover {
+    color: #dfdfdf;
+    border: 1px solid #dfdfdf;
+}
+
+form, .content, textarea {
+    height: 100%;
+}
+
+textarea {
+    resize: both;
+    overflow: auto;
+}
+
+.content {
+    -o-user-select: all;
+    -moz-user-select: all;
+    -webkit-user-select: all;
+    user-select: all;
+
+    margin-top: 50px;
+    padding: 10px;
+    padding-left: 1em;
+    color: #000;
+}
+
+#id_content {
+    font-size: 12px;
+    width: 100%;
+    border: none;
+    outline: none;
+}
+
+/* These are to create tool tips
+ * Adapted from: http://www.webdesignerdepot.com/2012/11/how-to-create-a-simple-css3-tooltip/
+ */
+.tooltip {
+    display: inline;
+    position: relative;
+    padding-left: 10px;
+}
+
+.tooltip:hover:before {
+    border: solid;
+    border-color: #333 transparent;
+    border-width: 0px 6px 6px 6px;
+    top: 20px;
+    content: "";
+    right: 50%;
+    position: absolute;
+    z-index: 99;
+}
+
+.tooltip:hover:after {
+    background: #333;
+    background: rgba(0,0,0,.8);
+    border-radius: 5px;
+    top: 26px;
+    color: #fff;
+    content: attr(title);
+    right: 20%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    max-width: 500px;
+    white-space:nowrap;
+}
+
+/*
+    Error page
+*/
+
+.error {
+    font-family: "Oxygen", "Helvetica Neue", Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
+.error-number {
+    font-size: 170pt;
+}
+
+.error-message {
+    font-style: italic;
+    font-size: 20pt;
 }

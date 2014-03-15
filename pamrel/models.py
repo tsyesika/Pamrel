@@ -3,24 +3,25 @@ import datetime
 from pytz import utc
 
 from django.db import models
+from django.core import urlresolvers
 
 class Paste(models.Model):
 
     content = models.TextField()
-    theme = models.CharField(max_length=256, default="base")
-    language = models.CharField(max_length=256, blank=True, null=True, default=None)
+    theme = models.CharField(max_length=256, default="github")
+    language = models.CharField(max_length=256, blank=True, null=True, default='PlainText')
     delete_token = models.CharField(max_length=512)
 
     # optional stuff
     delete_at = models.DateTimeField(blank=True, null=True)
     delete_on_views = models.IntegerField(blank=True, null=True)
     numbers = models.BooleanField(default=False)
-    syntax = models.BooleanField(default=True) 
+    syntax = models.BooleanField(default=True)
 
     # properties
     viewed = models.IntegerField(default=0)
     created = models.DateTimeField(default=datetime.datetime.now(utc))
-    modified = models.DateTimeField(default=datetime.datetime.now(utc)) 
+    modified = models.DateTimeField(default=datetime.datetime.now(utc))
 
     @property
     def pid(self):
@@ -50,3 +51,6 @@ class Paste(models.Model):
                 context[key] = value.isoformat()
 
         return context
+
+    def get_absolute_url(self):
+        return urlresolvers.reverse('paste', kwargs={'pk': self.pid})
