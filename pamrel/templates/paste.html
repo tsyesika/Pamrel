@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
     {% if theme_path %}
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themes/{{ theme_path }}">
     {% endif %}
