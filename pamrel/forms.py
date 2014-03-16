@@ -1,4 +1,7 @@
 #!/usr/bin/python
+import hashlib
+import datetime
+
 from django import forms
 from pamrel import models
 
@@ -27,6 +30,16 @@ class PasteForm(forms.ModelForm):
 		self.fields['language'].choices += ((languages[name], name) for name in sorted_languages)
 		self.fields['content'].widget.attrs.update({'placeholder': '<code> ... </code>'})
 
+	def create_id(self):
+		""" Create a (hopefully) non-consequitive ID """
+		# The best way of creating a unique ID i think would be
+		# to sha1(content + posttime) and use that
+		whole_id = hashlib.sha1(self.cleaned_data['content'] + datetime.datetime.now().isoformat()).hexdigest()
+		for block in range(5, len(whole_id), 6):
+			pid = int(whole_id[0:block], 16)
+			if not models.Paste.objects.filter(pk=pid).exists():
+				return pid
+
 	def detect_language(self, data):
 		""" Detects the language of the paste """
 		try:
@@ -40,6 +53,9 @@ class PasteForm(forms.ModelForm):
 
 	def save(self, *args, **kwargs):
 		obj = super(PasteForm, self).save(*args, **kwargs)
+
+		# Sigh - there must be a better way right?
+		obj.id = self.create_id()
 
 		# Set language.
 		if not self.cleaned_data.get("language", ""):
