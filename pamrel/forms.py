@@ -30,7 +30,7 @@ class PasteForm(forms.ModelForm):
 		self.fields['language'].choices += ((languages[name], name) for name in sorted_languages)
 		self.fields['content'].widget.attrs.update({'placeholder': '<code> ... </code>'})
 
-	def create_id(self, attempts=3):
+	def create_id(self, attempts=0):
 		""" Create a (hopefully) non-consequitive ID """
 		# The best way of creating a unique ID i think would be
 		# to sha1(content + posttime) and use that
