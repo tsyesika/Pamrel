@@ -96,7 +96,12 @@ class PasteView(DetailView):
 
     def get(self, *args, **kwargs):
         response = super(PasteView, self).get(*args, **kwargs)
-        self.increment_paste()
+        # Do we need to delete it
+        if self.object is not None and not self.object.validate():
+            self.object.delete()
+            self.object = None
+            return self.render_to_response(context={})
+
         return response
 
     def generate_token(self, length):
@@ -137,24 +142,6 @@ class PasteView(DetailView):
 
         return context
 
-    def json_response(self, context, status=200):
-        """ Returns a JSON response """
-        if isinstance(context, dict):
-            context = json.dumps(context)
-
-        return HttpResponse(
-            context,
-            content_type="application/json",
-            status=status
-        )
-
-    def plain_response(self, context, status=200):
-        return HttpResponse(
-            context+"\n",
-            content_type="text/plain",
-            status=status
-        )
-
     def render_to_response(self, context, *args, **kwargs):
         if self.object is None:
             # Somethings gone wrong, give our JSON 404
@@ -164,6 +151,7 @@ class PasteView(DetailView):
             context = {"error": Error()}
             self.template_name = "error.html"
 
+        self.increment_paste()
         return super(PasteView, self).render_to_response(
             context=context,
             *args,
@@ -177,15 +165,6 @@ class RawPasteView(PasteView):
     def highlight_paste(self):
         return None
 
-    def json_response(self, context, *args, **kwargs):
-        if isinstance(context, basestring):
-            try:
-                context = json.loads(context)
-            except ValueError:
-                pass
-
-        return self.plain_response(context, *args, **kwargs)
-
     def render_to_response(self, context, *args, **kwargs):
         if self.object is None:
             return self.plain_response("Error: Paste not found")
@@ -195,6 +174,12 @@ class RawPasteView(PasteView):
             content_type="text/plain",
         )
 
+    def plain_response(self, context, status=200):
+        return HttpResponse(
+            context+"\n",
+            content_type="text/plain",
+            status=status
+        )
 
 ##
 # API views
@@ -228,6 +213,17 @@ class APIMetaPasteView(PasteView):
 
     def render_to_response(self, context):
         return self.json_response(context)
+
+    def json_response(self, context, status=200):
+        """ Returns a JSON response """
+        if isinstance(context, dict):
+            context = json.dumps(context)
+
+        return HttpResponse(
+            context,
+            content_type="application/json",
+            status=status
+        )
 
 class APIThemeListView(View):
     """ List all themes on the pastebin """

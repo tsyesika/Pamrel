@@ -12,9 +12,11 @@ class PasteForm(forms.ModelForm):
 		choices=(('', 'Auto Detect'),)
 	)
 
+	delete_at = forms.DateTimeField(required=False, input_formats=["%Y%m%dT%H:%M:%S"])
+
 	class Meta:
 		model = models.Paste
-		fields = ["content"]
+		fields = ["content", "delete_on_views", "delete_at"]
 
 	def __init__(self, initial=None, *args, **kwargs):
 		super(PasteForm, self).__init__(initial=initial, *args, **kwargs)

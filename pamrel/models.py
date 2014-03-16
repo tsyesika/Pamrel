@@ -54,3 +54,15 @@ class Paste(models.Model):
 
     def get_absolute_url(self):
         return urlresolvers.reverse('paste', kwargs={'pk': self.pid})
+
+    def validate(self):
+        """ Checks this doesn't have delete on <x> that has been met """
+        if self.delete_on_views is not None and self.delete_on_views < self.viewed:
+            return False # too many views
+
+        now = datetime.datetime.now(utc)
+        if self.delete_at is not None and self.delete_at < now:
+            return False # older than it should be
+
+        return True
+
