@@ -29,6 +29,15 @@ class IndexView(CreateView):
     def dispatch(self, *args, **kwargs):
         return super(IndexView, self).dispatch(*args, **kwargs)
 
+    def form_invalid(self, form, *args, **kwargs):
+        if self.request.POST.get("webUI") or self.request.method != "POST":
+            return super(IndexView, self).form_invalid(form=form, *args, **kwargs)
+
+        return HttpResponse(
+            'No content specified\n',
+            content_type="text/plain",
+            status=500)
+
     def form_valid(self, form, *args, **kwargs):
         # If they're a not pamrel.lu give them back the URL to the paste rather than a 302
         if self.request.POST.get("webUI") or self.request.method != "POST":
