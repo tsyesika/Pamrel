@@ -89,10 +89,10 @@ textarea {
 }
 
 .view-paste {
-    -o-user-select: all;
-    -moz-user-select: all;
-    -webkit-user-select: all;
-    user-select: all;
+    -o-user-select: text;
+    -moz-user-select: text;
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .content {
