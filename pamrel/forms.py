@@ -30,7 +30,7 @@ class PasteForm(forms.ModelForm):
 		self.fields['language'].choices += ((languages[name], name) for name in sorted_languages)
 		self.fields['content'].widget.attrs.update({'placeholder': '<code> ... </code>'})
 
-	def create_id(self):
+	def create_id(self, attempts=3):
 		""" Create a (hopefully) non-consequitive ID """
 		# The best way of creating a unique ID i think would be
 		# to sha1(content + posttime) and use that
@@ -39,6 +39,11 @@ class PasteForm(forms.ModelForm):
 			pid = int(whole_id[0:block], 16)
 			if not models.Paste.objects.filter(pk=pid).exists():
 				return pid
+
+		if attempts >= 3:
+			raise Exception("Unable to create past as ID pool is too small.")
+
+		return self.create_id(attempts=attempts+1)
 
 	def detect_language(self, data):
 		""" Detects the language of the paste """
