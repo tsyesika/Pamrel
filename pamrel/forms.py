@@ -1,8 +1,11 @@
 #!/usr/bin/python
 import hashlib
 import datetime
+import json
 
 from django import forms
+from django.core import exceptions
+
 from pamrel import models
 
 from pygments import lexers
@@ -15,6 +18,7 @@ class PasteForm(forms.ModelForm):
 		choices=(('', 'Auto Detect'),)
 	)
 
+	json_prettify = forms.BooleanField(required=False)
 	delete_at = forms.DateTimeField(required=False, input_formats=["%Y%m%dT%H:%M:%S"])
 
 	class Meta:
@@ -55,6 +59,25 @@ class PasteForm(forms.ModelForm):
 		# for some unknown reason get_lexer_by_name(lexer.name) doesn't work >.>
 		# however get_lexer_by_name(lexer.aliases[0]) does.
 		return lexer.aliases[0]
+
+	def clean(self, *args, **kwargs):
+		cleaned_data = super(PasteForm, self).clean(*args, **kwargs)
+
+		if cleaned_data.get('json_prettify', False):
+			try:
+				cleaned_data['content'] = json.dumps(
+					json.loads(cleaned_data['content']),
+					{'4': 5, '6': 7},
+					sort_keys=True,
+					indent=4,
+					separators=(',', ': ')
+				)
+
+				cleaned_data['language'] = 'js'
+			except ValueError:
+				raise exceptions.ValidationError("Error parsing JSON content.")
+
+		return cleaned_data
 
 	def save(self, *args, **kwargs):
 		obj = super(PasteForm, self).save(*args, **kwargs)
