@@ -24,12 +24,27 @@ function detectTab(text) {
 		This will return the tab (e.g. '\t' or '    ')
 	*/
 
+	if (text === undefined) {
+		return '    '; // default to soft tab of 4 spaces.
+	}
+
 	if (typeof text === 'string') {
 		// we always want to be dealing with an array.
 		text = [text];
 	}
 
-	return '    '; // Do somethin smart
+	var tabWidth;
+	text.forEach(function (line) {
+		if (line.startsWith('\t')) {
+			return '\t'
+		} else if (line.startsWith(' ')) {
+			// It's ' ' lets figure out how many there are
+			var tab = line.match(/^[ ]+/g)[0].length;
+			tabWidth = tab < tabWidth ? tab : tabWidth;
+		}
+	})
+
+	return new Array(tabWidth).join(' '); // Do somethin smart
 }
 
 function detectLanguage(code) {
