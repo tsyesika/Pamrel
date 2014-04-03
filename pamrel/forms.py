@@ -15,7 +15,10 @@ class PasteForm(forms.ModelForm):
 
 	language = forms.ChoiceField(
 		required=False,
-		choices=(('', 'Auto Detect'),)
+		choices=(
+				('', 'Auto Detect'),
+				('', 'Plain Text'),
+		)
 	)
 
 	json_prettify = forms.BooleanField(required=False)
