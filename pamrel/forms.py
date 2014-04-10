@@ -31,9 +31,9 @@ class PasteForm(forms.ModelForm):
 
 	language = forms.ChoiceField(
 		required=False,
-		choices=(
-				('', 'Auto Detect'),
-				('', 'Plain Text'),
+                choices=(
+                        ('', 'Auto Detect'),
+                        ('', 'Plain Text'),
 		)
 	)
 
@@ -57,7 +57,7 @@ class PasteForm(forms.ModelForm):
 		""" Create a (hopefully) non-consequitive ID """
 		# The best way of creating a unique ID i think would be
 		# to sha1(content + posttime) and use that
-		whole_id = hashlib.sha1(self.cleaned_data['content'] + datetime.datetime.now().isoformat()).hexdigest()
+		whole_id = hashlib.sha1(self.cleaned_data['content'].encode("utf-8") + datetime.datetime.now().isoformat()).hexdigest()
 		for block in range(5, len(whole_id), 6):
 			pid = int(whole_id[0:block], 16)
 			if not models.Paste.objects.filter(pk=pid).exists():
