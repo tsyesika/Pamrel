@@ -78,7 +78,7 @@ class Paste(models.Model):
             return False # too many views
 
         now = datetime.datetime.now(utc)
-        if self.delete_at is not None and self.delete_at >= now:
+        if self.delete_at is not None and self.delete_at < now:
             return False # older than it should be
 
         return True

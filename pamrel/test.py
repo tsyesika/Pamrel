@@ -15,15 +15,45 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 import json
+import datetime
+import pytz
 
 from django.test import TestCase
 
 from pamrel.forms import PasteForm
+from pamrel.models import Paste
 
 class PasteTest(TestCase):
 
     def __get_id(self, url):
         return url.split("/")[-2]
+
+    def test_delete_on_date(self):
+        """ Test that it will delete a paste after a set amount of time """
+
+        # Make the paste with a delete_at which I'll never meet in this test
+        paste = Paste(
+            id=0xFFFF,
+            content="My paste content.",
+            delete_at=datetime.datetime.now(pytz.UTC)+datetime.timedelta(hours=24)
+        )
+        paste.save()
+
+        # Make sure I can get the paste
+        response = self.client.get("/{id}/".format(id=paste.pid))
+        self.assertEqual(response.status_code, 200)
+
+        # Now change the date to before now
+        paste.delete_at = datetime.datetime.now(pytz.UTC)-datetime.timedelta(seconds=1)
+        paste.save()
+
+        # Check that we can't see it anymore
+        response = self.client.get("/{id}/".format(id=paste.pid))
+        self.assertEqual(response.status_code, 404)
+
+        # Test that the paste no longer exists in the database too
+        with self.assertRaises(Paste.DoesNotExist):
+            Paste.objects.get(pk=paste.pk)
 
     def test_delete_on_views(self):
         """ Test that it will delete on <x> number of views """
