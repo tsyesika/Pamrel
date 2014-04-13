@@ -1,8 +1,8 @@
 @import url(http://fonts.googleapis.com/css?family=Oxygen);
 
 * {
-    margin: 0px;
-    padding: 0px;
+    margin: 0em;
+    padding: 0em;
 }
 
 html, body {
@@ -51,32 +51,33 @@ a:hover {
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
-    text-indent: 1px;
+    text-indent: 0.0063em;
     text-overflow: '';
 }
 
 #id_language {
     font-family: "Oxygen", "Helvetica Neue", Arial, Helvetica, sans-serif;
-    font-size: 11pt;
-    border-radius: 2px;
-    border: 1px solid #D9D9D9;
+    font-size: 0.938em;
+    border-radius: 0.125em;
+    border: 0.064em solid #D9D9D9;
 
 }
 
 button {
     background-color: transparent;
     color: #bfbfbf;
-    border: 1px solid #bfbfbf;
-    width: 60px;
-    line-height: 25px;
-    font-size: 10pt;
+    border: 0.064em solid #bfbfbf;
+    width: 3.75em;
+    height: 1.72em;
+    line-height: 1.56px;
+    font-size: 0.813em;
     outline: none;
-    border-radius: 2px;
+    border-radius: 0.125em;
 }
 
 button:hover {
     color: #dfdfdf;
-    border: 1px solid #dfdfdf;
+    border: 0.064em solid #dfdfdf;
 }
 
 form, .content, textarea {
@@ -96,14 +97,14 @@ textarea {
 }
 
 .content {
-    margin-top: 50px;
-    padding: 10px;
+    margin-top: 3.125em;
+    padding: 0.625em;
     padding-left: 1em;
     color: #000;
 }
 
 #id_content {
-    font-size: 12px;
+    font-size: 1em;
     width: 100%;
     border: none;
     outline: none;
@@ -115,14 +116,14 @@ textarea {
 .tooltip {
     display: inline;
     position: relative;
-    padding-left: 10px;
+    padding-left: 0.625em;
 }
 
 .tooltip:hover:before {
     border: solid;
     border-color: #333 transparent;
-    border-width: 0px 6px 6px 6px;
-    top: 20px;
+    border-width: 0em 0.375em 0.375em 0.375em;
+    top: 1.25em;
     content: "";
     right: 50%;
     position: absolute;
@@ -132,15 +133,15 @@ textarea {
 .tooltip:hover:after {
     background: #333;
     background: rgba(0,0,0,.8);
-    border-radius: 5px;
-    top: 26px;
+    border-radius: 0.313em;
+    top: 1.625em;
     color: #fff;
     content: attr(title);
     right: 20%;
-    padding: 5px 15px;
+    padding: 0.131em 0.938em;
     position: absolute;
     z-index: 98;
-    max-width: 500px;
+    max-width: 31.25em;
     white-space:nowrap;
 }
 
@@ -154,10 +155,10 @@ textarea {
 }
 
 .error-number {
-    font-size: 170pt;
+    font-size: 15em;
 }
 
 .error-message {
     font-style: italic;
-    font-size: 20pt;
+    font-size: 1.7em;
 }
