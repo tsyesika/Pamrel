@@ -143,6 +143,7 @@ class PasteView(DetailView):
         return context
 
     def render_to_response(self, context, *args, **kwargs):
+        status_code = 200
         if self.object is None:
             # Somethings gone wrong, give our JSON 404
             class Error(object):
@@ -150,10 +151,12 @@ class PasteView(DetailView):
                 message = "Nothing to see here folks, move along now."
             context = {"error": Error()}
             self.template_name = "error.html"
+            status_code = 404
 
         self.increment_paste()
         return super(PasteView, self).render_to_response(
             context=context,
+            status=status_code,
             *args,
             **kwargs
         )
