@@ -28,6 +28,67 @@ class PasteTest(TestCase):
     def __get_id(self, url):
         return url.split("/")[-2]
 
+    def test_raw(self):
+        """ Test that raw is given correctly """
+        paste = Paste(
+            id=0xFFFF,
+            content="print('hello!')"
+        )
+        paste.save()
+
+        raw = self.client.get("/{id}/raw/".format(id=paste.pid))
+        self.assertEqual(raw.status_code, 200)
+        self.assertEqual(raw.content, paste.content)
+
+    def test_meta_information(self):
+        """ Tests that meta view reports the correct information """
+        created = datetime.datetime(year=2013, month=1, day=2, tzinfo=pytz.UTC)
+        modified = datetime.datetime(year=2014, month=2, day=3, tzinfo=pytz.UTC)
+        paste = Paste(
+            id=0xffff,
+            content="My paste content",
+            theme="unittest",
+            language="Python",
+            delete_at=datetime.datetime.now(pytz.UTC)+datetime.timedelta(hours=24),
+            delete_on_views=72,
+            created=created,
+            modified=modified
+        )
+
+        paste.save()
+
+        meta_information = self.client.get("/api/v1/{id}/meta/".format(id=paste.pid))
+        meta_information = json.loads(meta_information.content)
+
+        # Check each value
+        self.assertEqual(meta_information["theme"], paste.theme)
+        self.assertEqual(meta_information["created"], created.isoformat())
+        self.assertEqual(meta_information["modified"], modified.isoformat())
+        self.assertEqual(meta_information["deleteOnViews"], paste.delete_on_views)
+        self.assertEqual(meta_information["deleteAt"], paste.delete_at.isoformat())
+        self.assertEqual(meta_information["syntax"], paste.syntax)
+        self.assertEqual(meta_information["numbers"], paste.numbers)
+        self.assertEqual(meta_information["viewed"], paste.viewed)
+
+    def test_viewed_incremented(self):
+        """ Test that a paste view count has been incremented upon being viewed """
+        p = Paste(
+            id=0x1,
+            content="My paste content."
+        )
+
+        p.save()
+
+        # Check that an unviewed paste has no views on it
+        self.assertEqual(p.viewed, 0)
+
+        # View it
+        self.client.get("/{id}/".format(id=p.pid))
+
+        # Now assert it's been incremented
+        p = Paste.objects.get(pk=p.pk)
+        self.assertEqual(p.viewed, 1)
+
     def test_delete_on_date(self):
         """ Test that it will delete a paste after a set amount of time """
 
