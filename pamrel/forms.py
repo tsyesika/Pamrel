@@ -33,7 +33,7 @@ class PasteForm(forms.ModelForm):
 		required=False,
                 choices=(
                         ('', 'Auto Detect'),
-                        ('', 'Plain Text'),
+                        ('PlainText', 'Plain Text'),
 		)
 	)
 
