@@ -136,7 +136,8 @@ class PasteView(DetailView):
         context["theme_path"] = "{0}.css".format(self.object.theme)
 
         if self.object.language != "PlainText":
-            context["content"] = self.highlight_paste()
+            # pass in a method - it will only be rendered if we don't have a cached copy
+            context["content"] = self.highlight_paste
         else:
             context["highlighted"] = True
 

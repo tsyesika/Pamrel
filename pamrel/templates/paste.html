@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% load staticfiles %}
+{% load cache staticfiles %}
+
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
     {% if theme_path %}
@@ -17,11 +18,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="view-paste">
-        {% if object.syntax %}
-            {{ content|safe }}
-        {% else %}
-            <pre>{{ content }}</pre>
-        {% endif %}
-    </div>
+    {% cache 21600 paste paste.id %}
+        <div class="view-paste">
+            {% if object.syntax %}
+                {{ content|safe }}
+            {% else %}
+                <pre>{{ content }}</pre>
+            {% endif %}
+        </div>
+    {% endcache %}
 {% endblock %}
