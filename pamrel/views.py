@@ -89,7 +89,7 @@ class PasteView(DetailView):
 
         if isinstance(self.object, Paste):
             object.viewed += 1
-            object.save()
+            object.save(update_fields=["viewed"])
             return True
 
         return False
