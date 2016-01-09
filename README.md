@@ -1,35 +1,8 @@
-Pamrel
-======
+Pamrel has moved
+================
 
-Pastebin using restful endpoints. This is a basic pastebin but with a few features
-that you may find useful:
+You can now find Pamrel: [notabug.org/Tsyesika/Pamrel](https://notabug.org/Tsyesika/Pamrel)
 
-- Syntax highlighting
-- Theming (any pygments compatable theme)
-- Delete after <x> many views
-- Delete after a certain date
-- Line numbering
-
-
-Clients
--------
-
-You can use curl:  
-`$ cat some_file.c | curl -F 'content=<-' -X POST http://pamrel.lu`
-
-There is also the following clients:
-- [Emacs (https://github.com/cwebber/pamrel-el)](https://github.com/cwebber/pamrel-el) by Chris Webber
-- [Chocolat (https://github.com/xray7224/pamrel.chocmixin)](https://github.com/xray7224/pamrel.chocmixin) by Jessica Tallon
-
-Licence
--------
-
-The pamrel pastebin code is under the AGPLv3:
-
-[<img alt="AGPL v3" src="https://www.gnu.org/graphics/agplv3-155x51.png">](https://www.gnu.org/licenses/agpl-3.0.html)
-
-Installing
-----------
-
-To install it simply grab the python-virtualenv stuff and then:  
-`$ pip install -r requirements.txt`
+I have moved the hosting of this project over to NotABug.org (NAB), this has been done because
+Github both is proprietary server side and uses closed source javascript. Notabug has a strong
+commitment to free software and so is a much better choice for myself and this project.
